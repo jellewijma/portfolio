@@ -1,70 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jelle Wijma</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" href="/src/logo2.png" type="image/gif" />
-    <!--  -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
-    />
-  </head>
-  <body>
-    <section class="frontpage">
-      <div class="img">
-        <img
-          src="/src/IMG_7190-wide.jpg"
-          alt="Photo of Jelle Wijma"
-          class="img"
-        />
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jelle Wijma</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="/src/logo2.png" type="image/gif" />
+  <!--  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script src="chart.js"></script>
+</head>
+
+<body>
+  <section class="frontpage">
+    <div class="img">
+      <img src="/src/IMG_7190-wide.jpg" alt="Photo of Jelle Wijma" class="img" />
+    </div>
+    <div class="title">
+      <h1>JELLE WIJMA</h1>
+      <div class="social">
+        <!-- <a href="https://www.youtube.com/channel/UC_GMlfqt9KA4Zs1PnDkbH8Q" class="fa fa-youtube-play"></a> -->
+        <a href="https://www.linkedin.com/in/jelle-wijma-3a5a391b9" class="fa fa-linkedin"></a>
+        <a href="https://www.instagram.com/jelle_wijma/" class="fa fa-instagram"></a>
+        <!-- <a href="https://www.twitch.tv/jelle_wijma" class="fa fa-twitch"></a> -->
       </div>
-      <div class="title">
-        <h1>JELLE WIJMA</h1>
-        <div class="social">
-          <a
-            href="https://www.youtube.com/channel/UC_GMlfqt9KA4Zs1PnDkbH8Q"
-            class="fa fa-youtube-play"
-          ></a>
-          <a
-            href="https://www.instagram.com/jelle_wijma/"
-            class="fa fa-instagram"
-          ></a>
-          <a href="https://www.twitch.tv/jelle_wijma" class="fa fa-twitch"></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>About me</h2>
+    <blockquote>
+      Hi my name is Jelle and I am <span id="age"></span> year old.<br>
+      I'm a creative entrepreneur who is interested in bringing value to a interprise by building websites that reaches the tageted audience.<br>
+      I currently study Software development at The Grafisch Lyceum Rotterdam.<br><br>
+
+      As someone with many ideas and some creativety I'm always creating something.
+    </blockquote>
+    <canvas id="myChart" width="400px" height="400px"></canvas>
+    <!-- <div class="vw100 padding-top">
+      <img src="/src/logo2.png" alt="logo" class="logo-medium" />
+    </div> -->
+  </section>
+
+  </section>
+  <section class="short">
+    <h2>Experience</h2>
+    <h5>school</h5>
+    <p>
+      School: <a href="https://www.glr.nl" class="link-GLR">Graphic Lyceum Rotterdam</a><br>
+      Level: MBO-4<br>
+      Length: 3 Years<br>
+      2019-2021
+    </p>
+    <h5>work</h5>
+    <p>
+      Company: <a href="https://www.virtualvaults.com" class="link-VV">VirtualVaults</a><br>
+      Position: IT-employee<br>
+      2018-2020
+    </p>
+  </section>
+  <section class="project" id="project">
+    <h5>projects</h5>
+    <div class="container">
+      <div class="card">
+        <div class="face face1">
+          <div class="content">
+            <img src="/src/SocialStat.png" alt="">
+            <h3>Social Stat</h3>
+          </div>
+        </div>
+        <div class="face face2">
+          <div class="content">
+            <p>Social Stat is a web aplication where you can track your social activitie.</p>
+            <a href="html/launch-SS.html">Read More</a>
+          </div>
         </div>
       </div>
-    </section>
+      <div class="card">
+        <div class="face face1">
+          <div class="content">
+            <img src="src/Dragons_Quest.png">
+            <h3>Dragons quest</h3>
+          </div>
+        </div>
+        <div class="face face2">
+          <div class="content">
+            <p>Dragons Quest is a puzzle multiplayer where you need to compleet puzzle to escape the lave.</p>
+            <a href="html/launch-DQ.html">Read More</a>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="face face1">
+          <div class="content">
+            <img src="src/Clock.png">
+            <h3>Coming Soon...</h3>
+          </div>
+        </div>
+        <div class="face face2">
+          <div class="content">
+            <p>In the coming months there will be more projects published. see the timeline for more info</p>
+            <a href="html/projects.html#timeline">TimeLine</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a href="html/projects.html" class="vw100 link-more">More...</a>
+  </section>
+  </section>
+  <footer>
+    <p>Made by: Jelle Wijma</p>
+  </footer>
+</body>
 
-    <section>
-      <h2>About me</h2>
-      <blockquote>
-        I'm a creative software developer who is interested in all kinds of subjects.<br />
-        Like game development and playing music intruments.<br>
-        <br>
-        Sander and I have a compony called Eurotypes.<br> 
-        we make bespoke keyboards for customers.<br> 
-        custom to the customer.<br/>
-      </blockquote>
-      <div class="vw100 padding-top">
-        <img src="/src/logo2.png" alt="logo" class="logo-medium" />
-      </div>
-    </section>
-    <section>
-      <h2>EuroTypes</h2>
-      <blockquote>
-        <br>
-        If you look for a custom keyboard that no one else has.<br> 
-        Wel you in luck, we build custom keyboard to your liking.<br>
-        <br>
-      </blockquote>
-      <div class="photos">
-        <img class="keyboards" src="/src/Keyboard.jpg" alt="" srcset="" width="50%">
-      </div>
-    </section>
-    <footer>
-      <p>Made by: Jelle Wijma</p>
-    </footer>
-  </body>
 </html>
