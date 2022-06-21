@@ -22,7 +22,17 @@
 <script>
 
 const getData = () => {
-    axios.defaults.headers.common["Authorization"] = 'Bearer d80uer4y7ccfaoy078nb39g4rpdia6';
+    console.log(document.location.hash)
+    // Get the client id out of the hash
+    clientId = document.location.hash;
+
+    clientId_stripped = clientId.substring(1);
+    clientId_clean = clientId_stripped.split('&');
+    console.log(clientId_clean[0])
+    clientId_ready = clientId_clean[0].split('=');
+    console.log(clientId_ready[1])
+
+    axios.defaults.headers.common["Authorization"] = 'Bearer ' + clientId_ready[1];
     axios.defaults.headers.common["Client-ID"] = 'dtl5hjirog33oqahml36ln8hu7h0i2';
     axios.get('https://api.twitch.tv/helix/channels?broadcaster_id=132607940').then(response => {
         console.log(response)
@@ -34,6 +44,9 @@ const getData = () => {
         document.getElementById('title_name').innerText = titleParts[1]
         document.getElementById('title_preacher').innerText = titleParts[2]
     })
+};
+const shows = () => {
+    
 };
 </script>
 </html>
