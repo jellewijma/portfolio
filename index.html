@@ -1,118 +1,232 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/v4-shims.css">
-    <script src="JS/script.js"></script>
-    <link rel="stylesheet" href="CSS/style.css" />
+<!doctype html>
+<html>
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF31T41VWY"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.2">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="app.js"></script>
+  <style>
+    .selected::before {
+      display: block;
+      content: "";
+      position: relative;
+      bottom: -42px;
+      left: 15px;
+      width: 120px;
+      height: 3px;
+      background-color: #37914a;
+      border-radius: 2px;
+    }
 
-      gtag('config', 'G-GF31T41VWY');
-    </script>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    body::-webkit-scrollbar {
+      display: none;
+    }
 
-    <title>Portfolio</title>
-  </head>
-  <body>
-    <!-- <div class="background-new-level" id="background-new-level">
-      <div class="nav">
-        <div class="back" id="back" onclick="close()">backspace</div>
+    /* Hide scrollbar for IE, Edge and Firefox */
+    body {
+      -ms-overflow-style: none;
+      /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+
+      width: 100vw;
+      width: calc(var(--vh, 1vh) * 100);
+    }
+  </style>
+</head>
+
+<body class="bg-neutral-800 overflow-x-hidden absolute">
+  <div class="bg-green-800 w-96 h-96 rounded-full blur-3xl absolute top-[10vh] left-[70vw] z-10"></div>
+  <div class="bg-green-800 w-52 h-96 rounded-full blur-3xl absolute top-[90vh] left-[30vw] z-10 rotate-45"></div>
+  <div class="bg-green-800 w-52 h-52 rounded-full blur-3xl absolute top-[170vh] left-[60vw] z-10"></div>
+  <div class="container mx-auto h-[80vh] w-11/12 z-20 relative">
+    <div class="flex flex-col-reverse md:flex-row md:justify-between justify-around items-center h-[80vh]">
+      <img src="./source/portrait-mid.jpg" srcset="./source/portrait-min.jpg w480, ./source/portrait-mid w1080"
+        class="md:w-3/12 md:aspect-[5/7] w-full h-64 md:h-auto object-cover object-[25%_25%] rounded-3xl" alt="Portait of Jelle Wijma">
+      <div class="rounded-xl bg-neutral-600 md:w-8/12 md:aspect-[17/9] w-full p-4">
+        <h1 class="text-white xl:text-6xl lg:text-4xl sm:text-3xl p-2 sm:p-1">Hallo 👋,</h1>
+        <p class="text-white xl:text-3xl lg:text-2xl md:text-lg text-base p-1 md:p-2 ">Mijn naam is Jelle en ik ben 21 Jaar.
+          En dit is mijn portfolio over mijn hobbies.
+          Als ik mij zelf zou moeten beschrijven in 2 worden dan zie die zijn,
+          Creative en Social.
+          Ik hou er van om creatief te zijn of dat nou een website is of een video maken.
+          En om die hobbies te delen met mijn vrienden, colleguas of school vrienden vind ik leuk.
+          En ook om hun hobbies en bezig heden te horen.</p>
       </div>
-      <div class="detail">
-        <h2>About me</h2>
-        <p>Hi my name is Jelle and I live in the Netherlands. I am a software developer studying at
-          the Graphic Lyceum Rotterdam.</p>
-        <p>age: 19 </p>
-        <p>Hobbys: playing guitar, building keyboards</p>
-        <p></p>
+    </div>
+  </div>
+  <div class="container mx-auto h-auto w-11/12 mb-48 z-20 relative">
+    <div class="w-full h-16 bg-neutral-600 rounded-xl flex justify-around items-center">
+      <div class="w-1/2 h-full">
+        <div onclick="changePage('hobbies')"
+          class="md:text-3xl text-xl h-full bg-neutral-400 text-white flex items-center justify-center rounded-tl-xl rounded-bl-xl rounded-tr-xl cursor-pointer">
+          <div id="hobbySelector" class="selected block text-white text-center">Hobbies 🕹️</div>
+        </div>
       </div>
-    </div> -->
-    <div class="new-content"></div>
-    <div id="pusher-top"></div>
-    <div class="card">
-      <div class="box">
-        <div class="content">
-        <h2 class="typing-demo">Hi my name is Jelle</h2>
-        <div class="divider">
-          <p class="delayed2s">
-            and I live in the Netherlands. I am a software developer studying at
-            the Graphic Lyceum Rotterdam.
-          </p>
-          <img
-            src="SOURCE/IMG_7190.jpg"
-            alt="profile picture"
-            class="delayed2s"
-          />
+      <div class="bg-neutral-400 w-1/2 h-full  rounded-tl-xl rounded-tr-xl rounded-br-xl">
+        <div onclick="changePage('school')"
+          class="md:text-3xl text-xl w-full h-full bg-neutral-600 text-white flex items-center justify-center rounded-bl-xl rounded-tr-xl rounded-br-xl cursor-pointer">
+          <div id="schoolSelector" class="block text-white text-center">
+            School 🎒
+          </div>
         </div>
       </div>  
     </div>
-    </div>  
-    <div id="pusher-bottom"></div>
-    <div class="card" onclick="page()">
-      <div class="box">
-        <div class="content">
-          <h2>About me</h2>
-          <p>Name: Jelle Wijma <a href="https://www.linkedin.com/in/jelle-wijma-3a5a391b9/" class="fab fa-linkedin-in"></a> <a href="https://www.instagram.com/jelle_wijma/" class="fab fa-instagram"></a></p>
-          <p>age: 20 </p>
-          <p>Hobbys: playing guitar, building keyboards</p>
+    <div class="grid  md:grid-cols-4 grid-cols-2 gap-6 pt-20" id="hobbies">
+      <div onclick="changeHobby('foto')"
+        class="w-full aspect-[5/7] bg-neutral-400 rounded-xl flex flex-col justify-end bg-cover bg-[url('./source/sunrize-mid.jpg')] cursor-pointer">
+        <div
+          class="h-20 text-white text-center text-4xl sm:text-xl bg-gradient-to-t from-black rounded-b-xl flex justify-center items-center">
+          Photography</div>
+      </div>
+      <div onclick="changeHobby('cmk')"
+        class="w-full aspect-[5/7] bg-neutral-400 rounded-xl flex flex-col justify-end bg-cover bg-[url('./source/keyboard-mid.jpg')] cursor-pointer">
+        <div
+          class="h-20 text-white text-center text-2xl sm:text-sm bg-gradient-to-t from-black rounded-b-xl flex justify-center items-center">
+          Custom Mechanical Keyboards</div>
+      </div>
+      <div onclick="changeHobby('muziek')"
+        class="w-full aspect-[5/7] bg-neutral-400 rounded-xl flex flex-col justify-end bg-cover bg-[url('./source/bass-mid.jpg')] cursor-pointer">
+        <div
+          class="h-20 text-white text-center text-4xl sm:text-xl bg-gradient-to-t from-black rounded-b-xl flex justify-center items-center">
+          Muziek</div>
+      </div>
+      <div onclick="changeHobby('gaming')"
+        class="w-full aspect-[5/7] bg-neutral-400 rounded-xl flex flex-col justify-end bg-cover bg-[url('./source/valorant-mid.jpg')] cursor-pointer">
+        <div
+          class="h-20 text-white text-center text-4xl sm:text-xl bg-gradient-to-t from-black rounded-b-xl flex justify-center items-center">
+          Gaming</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gaming -->
+  <div class="container mx-auto h-[50vh] w-11/12 z-20 relative" id="gaming">
+    <div class="">
+      <div class="flex justify-between items-center h-[80vh]">
+        <video class="w-8/12 aspect-[16/12] object-cover rounded-3xl" alt="Portait of Jelle Wijma" autoplay muted loop>
+          <source
+            src="https://assets.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt778f65cedfee54fd/63bcad5b08dfb21202a7794d/VAL_Ep6_Homepage-CG-Video_V5.mp4"
+            type="video/mp4">
+        </video>
+        <div class="rounded-xl bg-neutral-600 w-3/12 aspect-[16/32] p-4">
+          <h2 class="text-white text-4xl sm:text-xl p-2">Gaming 🎮</h2>
+          <p class="text-white text-2xl sm:text-lg p-2">Valorant is de game waar ik lekker kan ontspannen en mijn competivieteit kwijt kan.</p>
+        </div>
+      </div>
+      <div class="h-auto w-full bg-neutral-700 rounded-xl flex">
+        <iframe src="https://tracker.gg/overlays/overlay/1e233d10-8a42-41f8-91cf-40ab9018c6cc" class="rounded-xl"
+          frameborder="0"></iframe>
+        <div class="">Chamber</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Custom Mechanical Keyboards -->
+  <div class="container mx-auto h-[50vh] w-11/12 z-20 relative" id="customMechanicalKeyboards">
+    <div class="">
+      <div class="flex flex-col items-center h-[80vh]">
+        <img src="./source/keyboard-mid.jpg" alt=""
+          srcset="./source/keyboard-min.jpg 480w, ./source/keyboard-mid.jpg 1080w"
+          class="w-full object-cover rounded-3xl">
+        <div class="rounded-xl bg-neutral-600 w-full p-4 mt-16">
+          <h2 class="text-white text-4xl sm:text-xl p-2">Custom Mechanical Keyboards ⌨️</h2>
+          <p class="text-white text-2xl sm:text-lg p-2">Of ter wel het bouwen van computer toetsenborden. Als iemand die het leuk
+            vindt om dingen te personaliseren, is dit een superleuke hobby waar je helemaal los kunt gaan. De
+            aantrekkelijkheid van gepersonaliseerde toetsenborden is dat jij een toetsenbord kunt maken naar jouw stijl,
+            geluidsvoorkeur en gevoelsmatigheid.</p>
+        </div>
+        <!-- <div class="">
+          <div class=""></div>
+          <img src="" alt="" srcset="">
+        </div>
+        <div class="">mijn project</div> -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Music -->
+  <div class="container mx-auto h-[50vh] w-11/12 z-20 relative" id="muziek">
+    <div class="">
+      <div class="flex justify-between items-center h-[80vh]">
+        <div class="w-6/12 h-[60vh] object-cover rounded-3xl  bg-cover bg-[url('./source/bass-mid.jpg')]"
+          alt="Portait of Jelle Wijma"></div>
+        <div class="rounded-xl bg-neutral-600 w-5/12 h-[60vh] p-4">
+          <h2 class="text-white text-4xl sm:text-xl p-2">Muziek 🎸</h2>
+          <p class="text-white text-2xl sm:text-lg p-2">
+            Een aantal hoogte punten zijn dat ik voor een grote public heb kunnen spelen als bassist met een vriende
+            band.
+            Zelf speel ik ook gitaar en een beetje drum.
+            Maar niet alleen speel ik instrumenten ik luister ook heelveel muziek.
+          </p>
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="box">
-        <div class="content">
-          <h2>School</h2>
-          <p>VMBO-4: Melanchthon De Blesewic (2015-2019)</p>
-          <p>MBO-4: Graphic Lyceum Rotterdam (ongoing)</p>
+  </div>
+
+  <!-- Photography -->
+  <div class="container mx-auto h-auto w-11/12 block z-20 relative" id="photography">
+    <div class="">
+      <div class="flex justify-between items-start h-[80vh]">
+        <div class="flex flex-col w-[31%]">
+          <div class="w-12/12 h-1/3 bg-neutral-600 rounded-xl p-2 mb-4">
+            <h2 class="text-3xl text-white p-2 sm:text-xl">Photography 📸</h2>
+            <p class="text-xl sm:text-sm text-white p-2">Met fotos maken kan ik laten zien hoe ik de wereld zie</p>
+          </div>
+          <img class="rounded-xl my-4" src="./source/fog-min.jpeg" alt=""
+            srcset="./source/fog-min.jpg w480, ./source/fog-mid.jgp w1080">
+          <img class="rounded-xl my-4" src="./source/moon-mid.jpg" alt="" srcset="">
+          <img class="rounded-xl my-4" src="./source/norway-port-mid.jpg" alt="">
+        </div>
+        <div class="flex flex-col w-[31%]">
+          <img class="rounded-xl mb-4" src="./source/powerline-center-mid.jpg" alt="" srcset="">
+          <img class="rounded-xl my-4" src="./source/church-delft-mid.jpg" alt="" srcset="">
+          <img class="rounded-xl my-4" src="./source/sunrize-mid.jpg" alt="" srcset="">
+          <div class="w-12/12 h-1/3 bg-neutral-700 rounded-xl p-4 mb-4 text-white text-2xl sm:text-lg">
+            Voor meer foto's kijk op mijn <a href="https://www.instagram.com/jelle_wijma/"
+              class="text-transparent bg-clip-text bg-gradient-to-r from-[#405DE6] via-[#C13584] to-[#FFDC80]">@Instagram</a>
+          </div>
+        </div>
+        <div class="flex flex-col w-[31%]">
+          <img class="rounded-xl mb-4" src="./source/norway-boat-mid.jpg" alt="" srcset="">
+          <img class="rounded-xl my-4" src="./source/chruch-pijnacker-mid.jpg" alt="" srcset="">
+          <img class="rounded-xl my-4" src="./source/norway-bird-mid.jpg" alt="" srcset="">
+          <img class="rounded-xl my-4" src="./source/powerline-side-mid.jpg" alt="" srcset="">
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="box">
-        <div class="content">
-          <h2>Work experience</h2>
-          <p>VDMi: Web developer</p>
-          <p>VirtualVaults: ICT-Medewerker</p>
-          <p>Bromini: Wordpress maintenance</p>
+  </div>
+
+  <!-- school -->
+
+  <div class="container mx-auto w-11/12 z-20 relative" id="school">
+    <div class="">
+      <div class="flex justify-between items-center flex-col">
+        <div class="rounded-xl bg-neutral-600 p-4">
+          <h2 class="text-white text-4xl p-2">School 🏫</h2>
+          <p class="text-white text-2xl p-2">
+            Ik heb mij aangemeld voor de opleiding Creative media and game technologies op de Hogeschool Rotterdam omdat ik niet alleen het coderen leuk vind maar ook het ontwerpen van de games en websites. 
+            In deze strekking wil ik mij graag verder ontwikkelen. 
+            <br><br>
+            Ik heb de opleiding Applicatie en media ontwikkelaar op het Grafisch Lyceum Rotterdam gevolgd. Wat ik daar leuk vond en wat mij instirederen is om met nieuwe ideeen te komen en die te implementeeren in een project.
+          </p>
+        </div>
+        <div class="rounded-xl bg-neutral-600 p-4 my-8 w-full">
+          <h2 class="text-white text-4xl p-2">Andere projecten</h2>
+          <p class="text-white text-2xl p-2">
+            Een project die ik samen met een vriend heb gemaakt is een website voor een bedrijf genaamd
+            <a href="https://buroo.tech/" class="text-green-600">Buroo.tech</a>
+            <br><br>
+            Een GameJam project die ik heb gemaakt is een game genaamd
+            <a href="https://jelrebel.itch.io/endless" class="text-blue-700">Endless</a>
+          </p>
         </div>
       </div>
     </div>
-    <div class="card">
-      <div class="box">
-        <div class="content">
-          <h2>Project - random list generator</h2>
-          <p>A webapp made with firebase and nodeJS</p>
-          <a href="https://fir-chat-app-59736.web.app/">link-></a>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="box">
-        <div class="content">
-          <h2>Project - chat app</h2>
-          <p>A webapp made with firebase, react and nodeJS</p>
-          <a href="https://superchat-jelle.web.app/">link-></a>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="box">
-        <div class="content">
-          <h2>Contact</h2>
-          <p>You can contact me on <a href="https://www.linkedin.com/in/jelle-wijma-3a5a391b9/">linkedin</a>  or send an email to Jelle.wijma@gmail.</p>
-        </div>
-      </div>
-    </div>
-    <!-- <div class="100vh" style="height:100vh;"></div> -->
-    </div>
-  </body>
+
+</body>
+
 </html>
