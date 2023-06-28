@@ -1,9 +1,3 @@
-window.addEventListener('resize', () => {
-  // We execute the same script as before
-  let vh = window.innerWidth * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-});
-
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("gaming").style.display = "none";
   document.getElementById("customMechanicalKeyboards").style.display = "none";
