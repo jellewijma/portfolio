@@ -5,6 +5,31 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("photography").style.display = "block";
   document.getElementById("school").style.display = "none";
   document.getElementById("hobbies").style.display = "grid";
+
+  // /* Storing user's device details in a variable*/
+  // let details = navigator.userAgent;
+
+  let regexp = /android|iphone|kindle|ipad/i;
+
+  let isMobileDevice = regexp.test(details);
+
+  var bgParticles = Array.from(document.getElementsByClassName("mobile"));
+
+  console.log(bgParticles);
+
+  if (isMobileDevice) {
+    console.log("You are using a Mobile Device");
+    // disable bg blur on mobile
+    bgParticles.forEach(element => {
+      element.style.display = "none";
+      console.log(element);
+    });
+  } else {
+    bgParticles.forEach(element => {
+      element.style.display = "block";
+    });
+    console.log("You are using Desktop");
+  }
 });
 
 function changePage(page) {
