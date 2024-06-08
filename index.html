@@ -9,7 +9,7 @@
 </head>
 
 <body class="bg-black overflow-x-hidden">
-    <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed backdrop-blur-lg">
+    <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed backdrop-blur-lg z-10">
         <div
             class="w-screen h-[88px] flex items-center px-12 border-r-[1px] border-b-[1px] border-[#ffffff26] font-bold">
             JelleWijma</div>
@@ -21,7 +21,7 @@
         </div>
     </nav>
     <main class="w-screen pt-[88px]">
-        <div class="w-screen h-[140vh] xl:h-[70vh] flex flex-col xl:flex-row">
+        <div class="w-screen h-[140vh] xl:h-[70vh] flex flex-col-reverse xl:flex-row">
             <div
                 class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative">
                 <h3 class="text-[#ffffff80] text-xl">Concept Design</h3>
@@ -59,14 +59,48 @@
             </div>
         </div>
         <div class="w-screen h-[140vh] xl:h-[70vh] flex flex-col xl:flex-row">
-            <div class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26]"></div>
-            <div class="h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]"></div>
+            <div
+                class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] flex justify-center items-center">
+                <img src="./smartmockups_lx6ia7tz.png" alt="" class="w-3/4">
+            </div>
+            <div
+                class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]">
+                <h3 class="text-[#ffffff80] text-xl">Concept Design</h3>
+                <h2 class="text-white text-6xl font-bold mt-8">Porsche Club</h2>
+                <p class="text-white text-xl mt-12 leading-8">
+                    Developed as a showcase project, this Porsche Club
+                    website
+                    highlights my skills in web design and
+                    development. The site features a sleek, user-friendly interface, engaging content on Porsche
+                    vehicles, and interactive elements for a dynamic user experience. Designed to cater to Porsche
+                    enthusiasts, it includes news, events, and technical resources, demonstrating my ability to create
+                    visually appealing and functional websites.
+                </p>
+                <a href="https://jellewijma.github.io/porsche-club"
+                    class="text-white w-8 h-8 text-center leading-7 absolute bottom-12 right-14">
+                    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                    <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+                    <svg width="40px" height="40px" viewBox="0 -4.5 20 20" version="1.1"
+                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)"
+                                fill="#ffffff80">
+                                <g id="icons" transform="translate(56.000000, 160.000000)">
+                                    <polygon id="arrow_right-[#346]"
+                                        points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
+                                    </polygon>
+                                </g>
+                            </g>
+                        </g>
+                    </svg>
+                </a>
+            </div>
         </div>
     </main>
     <footer></footer>
 
 
-    <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 backdrop-blur-sm"></div>
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -128,7 +162,7 @@
         // add event listener
         button.addEventListener("click", function () {
             // get the modal
-            var modal = document.querySelector(".z-10");
+            var modal = document.querySelector(".z-20");
 
             // hide the modal
             modal.style.display = "none";
