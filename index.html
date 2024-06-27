@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-black overflow-x-hidden">
+<body class="bg-black overflow-x-hidden scroll-hide">
     <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed backdrop-blur-lg z-10">
         <div
             class="w-screen h-[88px] flex items-center px-12 border-r-[1px] border-b-[1px] border-[#ffffff26] font-bold">
@@ -20,10 +20,10 @@
             <div class="">Contact</div>
         </div>
     </nav>
-    <main class="w-screen pt-[88px]">
+    <main class="w-screen pt-0 xl:pt-[88px]">
         <div class="w-screen h-[140vh] xl:h-[70vh] flex flex-col-reverse xl:flex-row">
             <div
-                class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative">
+                class="h-2/6 xl:h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative">
                 <h3 class="text-[#ffffff80] text-xl">Concept Design</h3>
                 <h2 class="text-white text-6xl font-bold mt-8">Porsche Club</h2>
                 <p class="text-white text-xl mt-12 leading-8">
@@ -54,17 +54,42 @@
                     </svg>
                 </a>
             </div>
-            <div class="h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]">
+            <div class="h-4/6 xl:h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]">
                 <img src="./smartmockups_lx5aedim.jpg" alt="" class="w-full h-full object-cover">
             </div>
         </div>
-        <div class="w-screen h-[140vh] xl:h-[70vh] flex flex-col xl:flex-row">
-            <div
-                class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] flex justify-center items-center">
-                <img src="./smartmockups_lx6ia7tz.png" alt="" class="w-3/4">
+        <div class="w-screen grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/000003530005.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
             </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/000003530008.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/000003530010.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/000003530023.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/000005180001.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/imm001_0A.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/imm004_3A.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/imm005_4A.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+            <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
+                <img src="/images/imm009_9.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
+            </div>
+        </div>
+        <div class="w-screen border-t-[1px] border-[#ffffff26] text-white">
             <div
-                class="h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]">
+                class="h-2/6 xl:h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative">
                 <h3 class="text-[#ffffff80] text-xl">Concept Design</h3>
                 <h2 class="text-white text-6xl font-bold mt-8">Porsche Club</h2>
                 <p class="text-white text-xl mt-12 leading-8">
@@ -100,7 +125,7 @@
     <footer></footer>
 
 
-    <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 backdrop-blur-sm"></div>
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -134,7 +159,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
 </body>
 
@@ -142,7 +167,7 @@
     .scroll-hide {
         -ms-overflow-style: none;
         /* for Internet Explorer, Edge */
-        scrollbar-width: none;
+        /* scrollbar-width: none; */
         /* for Firefox */
         overflow-y: scroll;
     }
@@ -171,12 +196,3 @@
 </script>
 
 </html>
-
-
-<!-- 
-    
-    https://jellewijma.github.io/eurotypeindustries/ 
-
-    https://buroo-qqkbxsniv-buroo.vercel.app/
-
--->
