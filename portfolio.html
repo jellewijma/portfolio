@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="w-screen h-screen overflow-hidden flex">
+
+  <header class="h-screen w-[30vw] flex flex-col justify-center">
+    <div class="flex flex-col m-auto">
+      <h1 class="font-bold text-6xl py-6">Credia</h1>
+      <a href="./index.html" class="py-1 text-gray-600">Home</a>
+      <a href="./about.html" class=" py-1 text-gray-600">About</a>
+      <a href="./portfolio.html" class="py-1 text-gray-900 font-medium">Portfolio</a>
+      <a href="" class="py-1 text-gray-600">Contact</a>
+      <p class="py-3 italic text-gray-400">@2021 TailTemplate</p>
+    </div>
+  </header>
+
+  <main class="h-full w-full bg-gray-100 overflow-x-auto">
+    <div class="w-4/5 my-24 mx-auto flex flex-col">
+      <h3 class="px-2 py-1 bg-gray-300 w-fit font-medium">PORTFOLIO</h3>
+      <div class="flex py-6">
+        <h2 class="font-bold text-2xl pr-10">My Portfolio</h2>
+        <div class="flex gap-3 justify-center">
+          <button class="bg-gray-800 py-2 px-5 font-bold rounded-full text-white">All</button>
+          <button class="bg-gray-200 py-2 px-5 font-bold rounded-full">Web</button>
+          <button class="bg-gray-200 py-2 px-5 font-bold rounded-full">Print</button>
+          <button class="bg-gray-200 py-2 px-5 font-bold rounded-full">3D</button>
+          <button class="bg-gray-200 py-2 px-5 font-bold rounded-full">Animation</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <img src="./img/000003530002.jpg" alt="" class="aspect-square object-cover rounded-lg">
+        <img src="./img/000003530008.jpg" alt="" class="aspect-square object-cover rounded-lg">
+        <img src="./img/000003530010.jpg" alt="" class="aspect-square object-cover rounded-lg">
+        <img src="./img/000003530023.jpg" alt="" class="aspect-square object-cover rounded-lg">
+        <img src="./img/000005180018.jpg" alt="" class="aspect-square object-cover rounded-lg">
+        <img src="./img/000005180001.jpg" alt="" class="aspect-square object-cover rounded-lg">
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-3">
+        <div class="bg-gray-300 rounded-lg">
+          <img src="./img/porsche-club.png" alt="" class="rounded-t-lg">
+          <div class="">
+            <span class="text-sm text-gray-700 uppercase">Porche Club Car Designer</span><br>
+            <span class="text-base font-semibold">Design & Development, Photoshop, Illustrator</span><br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</body>
+
+</html>
