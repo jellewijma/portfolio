@@ -9,12 +9,21 @@
 </head>
 
 <body class="bg-black overflow-x-hidden scroll-hide">
-    <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed backdrop-blur-lg z-10">
+    <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed z-10 xl:backdrop-blur-lg">
         <div
-            class="w-screen h-[88px] flex items-center px-12 border-r-[1px] border-b-[1px] border-[#ffffff26] font-bold">
-            JelleWijma</div>
+            class="w-screen h-[88px] flex items-center px-12 border-r-[1px] border-b-[1px] border-[#ffffff26] font-bold backdrop-blur-lg xl:backdrop-blur-[0px] flex justify-between">
+            <div class="">JelleWijma</div>
+            <div class="xl:hidden drop-shadow" id="mobile-menu">
+                <svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g id="menu">
+                        <path id="Icon" d="M12 21H60M12 36H60M12 51H60" stroke="white" stroke-width="7"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </g>
+                </svg>
+            </div>
+        </div>
         <div
-            class="w-screen h-[88px] flex justify-between items-center border-b-[1px] border-[#ffffff26] px-12 text-[#ffffff80]">
+            class="w-screen h-[88px] flex justify-between items-center border-b-[1px] border-[#ffffff26] px-12 text-[#ffffff80] backdrop-blur-lg xl:backdrop-blur-[0px] opacity-0 xl:opacity-100">
             <div class="">Projects</div>
             <div class="">About</div>
             <div class="">Contact</div>
@@ -124,7 +133,7 @@
     <footer></footer>
 
 
-    <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 backdrop-blur-sm"></div>
 
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -158,7 +167,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
 </body>
 
@@ -192,6 +201,18 @@
             modal.style.display = "none";
         });
     };
+
+    // on click
+    document.getElementById("mobile-menu").addEventListener("click", function () {
+        // get the menu
+        var menu = document.querySelectorAll(".xl\\:opacity-0, .xl\\:opacity-100");
+
+        // toggle the menu
+        menu.forEach(function (element) {
+            element.classList.toggle("opacity-0");
+            element.classList.toggle("opacity-100");
+        });
+    });
 </script>
 
 </html>
