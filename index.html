@@ -4,257 +4,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jelle Wijma | Portfolio</title>
+    <meta name="description"
+        content="Portfolio of Jelle Wijma, a web developer and photographer creating clean interfaces, visual systems, and image-led digital experiences.">
+    <title>Jelle Wijma | Web Developer & Photographer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-black overflow-x-hidden scroll-hide">
-    <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed z-10 xl:backdrop-blur-lg">
-        <div
-            class="w-screen h-[88px] flex items-center px-12 border-r-[1px] border-b-[1px] border-[#ffffff26] font-bold backdrop-blur-lg xl:backdrop-blur-[0px] flex justify-between">
-            <a href="./index.html" class="">JelleWijma</a>
-            <div class="xl:hidden drop-shadow" id="mobile-menu">
-                <svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g id="menu">
-                        <path id="Icon" d="M12 21H60M12 36H60M12 51H60" stroke="white" stroke-width="7"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                    </g>
+<body class="bg-black text-white overflow-x-hidden scroll-hide">
+    <nav class="fixed inset-x-0 top-0 z-30 border-b border-[#ffffff26] bg-black/70 text-white backdrop-blur-lg">
+        <div class="flex h-[88px] items-center justify-between">
+            <a href="/index.html"
+                class="flex h-full w-1/2 items-center border-r border-[#ffffff26] px-6 text-base font-bold tracking-[0.08em] sm:px-12 xl:w-1/4">JelleWijma</a>
+            <button type="button" id="mobile-menu-button"
+                class="flex h-full w-[88px] items-center justify-center border-l border-[#ffffff26] xl:hidden"
+                aria-controls="site-menu" aria-expanded="false" aria-label="Open navigation">
+                <span class="sr-only">Open navigation</span>
+                <svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M12 21H60M12 36H60M12 51H60" stroke="white" stroke-width="7" stroke-linecap="round"
+                        stroke-linejoin="round" />
                 </svg>
+            </button>
+            <div id="site-menu"
+                class="hidden absolute left-0 top-[88px] w-screen border-b border-[#ffffff26] bg-black/90 backdrop-blur-lg xl:static xl:flex xl:h-full xl:w-3/4 xl:border-b-0 xl:bg-transparent xl:backdrop-blur-0">
+                <a href="#projects"
+                    class="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r">Projects</a>
+                <a href="#about"
+                    class="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r">About</a>
+                <a href="/gallery.html"
+                    class="flex h-[72px] flex-1 items-center px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full">Gallery</a>
             </div>
-        </div>
-        <div
-            class="w-screen h-[88px] flex justify-between items-center border-b-[1px] border-[#ffffff26] px-12 text-[#ffffff80] backdrop-blur-lg xl:backdrop-blur-[0px] opacity-0 xl:opacity-100">
-            <div class="">Projects</div>
-            <div class="">About</div>
-            <a href="./gallery.html" class="">Gallery</a>
         </div>
     </nav>
-    <main class="w-screen pt-0 xl:pt-[88px]">
-        <div class="w-screen h-[160vh] xl:h-[70vh] flex flex-col-reverse xl:flex-row">
-            <div
-                class="h-[50%] xl:h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative">
-                <h3 class="text-[#ffffff80] text-xl">Introduction</h3>
-                <h2 class="text-white text-6xl font-bold mt-8">About me 👋</h2>
-                <p class="text-white text-xl mt-12 leading-8">
-                    I am a web developer with a passion for creating innovative and user-friendly websites. I have
-                    experience in front-end and back-end development, as well as design and project management. I am
-                    skilled in HTML, CSS, JavaScript, and PHP, and have worked with various frameworks and content
-                    management systems. I am dedicated to delivering high-quality work that meets the needs of my
-                    clients
-                    and users. I am always looking for new challenges and opportunities to grow as a developer.
+
+    <main class="pt-[88px]">
+        <section id="about" class="grid min-h-[calc(100vh-88px)] border-b border-[#ffffff26] xl:grid-cols-2">
+            <div class="order-2 flex flex-col justify-between border-t border-[#ffffff26] p-6 sm:p-12 xl:order-1 xl:border-r xl:border-t-0">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">Web development / photography</p>
+                    <h1 class="mt-8 max-w-3xl text-5xl font-bold leading-none sm:text-7xl xl:text-8xl">
+                        Digital work with a strong visual point of view.
+                    </h1>
+                    <p class="mt-10 max-w-2xl text-lg leading-8 text-[#ffffffe6] xl:text-xl">
+                        I build clean, responsive websites and visual concepts with attention to layout, motion,
+                        usability, and the story an image can carry. This portfolio brings my development work and
+                        photography into one place.
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-3 border border-[#ffffff26]">
+                    <div class="p-4 sm:p-6">
+                        <p class="text-3xl font-bold">04</p>
+                        <p class="mt-2 text-xs uppercase tracking-[0.22em] text-[#ffffff80]">Focus areas</p>
+                    </div>
+                    <div class="border-x border-[#ffffff26] p-4 sm:p-6">
+                        <p class="text-3xl font-bold">09</p>
+                        <p class="mt-2 text-xs uppercase tracking-[0.22em] text-[#ffffff80]">Gallery shots</p>
+                    </div>
+                    <div class="p-4 sm:p-6">
+                        <p class="text-3xl font-bold">01</p>
+                        <p class="mt-2 text-xs uppercase tracking-[0.22em] text-[#ffffff80]">Featured build</p>
+                    </div>
+                </div>
+            </div>
+            <div class="order-1 min-h-[60vh] xl:order-2">
+                <img src="/resources/DSC6037.jpg" alt="Jelle standing in front of mountains"
+                    class="h-full w-full object-cover" fetchpriority="high">
+            </div>
+        </section>
+
+        <section aria-label="Selected photography" class="grid grid-cols-2 border-b border-[#ffffff26] md:grid-cols-4">
+            <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
+                <img src="/images/000003530005.jpg" alt="Classic car detail photographed in warm light"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span
+                    class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Car
+                    work</span>
+            </a>
+            <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
+                <img src="/images/000003530008.jpg" alt="Car photographed from a low angle"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span
+                    class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Automotive</span>
+            </a>
+            <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
+                <img src="/images/imm004_3A.jpg" alt="Street scene captured on film"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span
+                    class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Street</span>
+            </a>
+            <a href="/gallery.html" class="group relative aspect-square overflow-hidden">
+                <img src="/images/imm005_4A.jpg" alt="Landscape photograph with strong contrast"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span
+                    class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Landscape</span>
+            </a>
+        </section>
+
+        <section id="projects" class="border-b border-[#ffffff26]">
+            <div class="grid xl:grid-cols-2">
+                <article class="flex min-h-[70vh] flex-col justify-between border-b border-[#ffffff26] p-6 sm:p-12 xl:border-r">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">Featured project</p>
+                        <h2 class="mt-8 text-5xl font-bold leading-none sm:text-6xl">Porsche Club</h2>
+                        <p class="mt-10 max-w-2xl text-lg leading-8 text-[#ffffffe6]">
+                            A showcase concept for a premium automotive community. The site explores a sharp editorial
+                            style, event-focused content, and a visual system that matches the energy of the brand.
+                        </p>
+                    </div>
+                    <a href="https://jellewijma.github.io/porsche-club"
+                        class="mt-12 inline-flex h-14 w-14 items-center justify-center border border-[#ffffff40] text-[#ffffffcc] transition hover:border-white hover:text-white"
+                        aria-label="Open Porsche Club project">
+                        <svg width="28" height="20" viewBox="0 -4.5 20 20" xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true">
+                            <polygon fill="currentColor"
+                                points="20 5.26683 14.343 0 12.929 1.21678 16.172 4.2264 0 4.2264 0 6.18481 16.172 6.18481 12.929 9.53046 14.343 11">
+                            </polygon>
+                        </svg>
+                    </a>
+                </article>
+                <div class="min-h-[70vh] border-b border-[#ffffff26]">
+                    <img src="/resources/mockup.jpg" alt="Porsche Club website mockup on a laptop"
+                        class="h-full w-full object-cover" loading="lazy">
+                </div>
+            </div>
+        </section>
+
+        <section class="border-b border-[#ffffff26]">
+            <div class="grid xl:grid-cols-[1.1fr_0.9fr]">
+                <div class="border-b border-[#ffffff26] p-6 sm:p-12 xl:border-b-0 xl:border-r">
+                    <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">What I make</p>
+                    <h2 class="mt-8 text-5xl font-bold leading-none sm:text-6xl">Design-minded front-end work.</h2>
+                </div>
+                <div class="grid sm:grid-cols-2 xl:grid-cols-1">
+                    <div class="border-b border-[#ffffff26] p-6 sm:border-r sm:p-10 xl:border-r-0">
+                        <h3 class="text-xl font-semibold">Responsive websites</h3>
+                        <p class="mt-4 leading-7 text-[#ffffffb3]">
+                            Static sites, landing pages, and portfolio experiences that stay fast and easy to maintain.
+                        </p>
+                    </div>
+                    <div class="border-b border-[#ffffff26] p-6 sm:p-10">
+                        <h3 class="text-xl font-semibold">Interface polish</h3>
+                        <p class="mt-4 leading-7 text-[#ffffffb3]">
+                            Strong spacing, clear hierarchy, keyboard-friendly controls, and careful mobile behavior.
+                        </p>
+                    </div>
+                    <div class="p-6 sm:col-span-2 sm:p-10 xl:col-span-1">
+                        <h3 class="text-xl font-semibold">Photography direction</h3>
+                        <p class="mt-4 leading-7 text-[#ffffffb3]">
+                            Image selection, visual rhythm, and gallery layouts for automotive, street, and landscape
+                            work.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid border-b border-[#ffffff26] xl:grid-cols-4">
+            <div class="border-b border-[#ffffff26] p-6 sm:p-12 xl:col-span-1 xl:border-b-0 xl:border-r">
+                <h2 class="text-4xl font-bold leading-none">Photography</h2>
+                <p class="mt-6 leading-7 text-[#ffffff99]">
+                    A compact archive of car, street, and landscape images.
                 </p>
-                <a href="/aboutme.html" class="text-white w-8 h-8 text-center leading-7 absolute bottom-12 right-14">
-                    <svg width="40px" height="40px" viewBox="0 -4.5 20 20" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                            <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)"
-                                fill="#ffffff80">
-                                <g id="icons" transform="translate(56.000000, 160.000000)">
-                                    <polygon id="arrow_right-[#346]"
-                                        points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                                    </polygon>
-                                </g>
-                            </g>
-                        </g>
+                <a href="/gallery.html"
+                    class="mt-8 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc] transition hover:text-white">
+                    Open gallery
+                    <svg width="22" height="16" viewBox="0 -4.5 20 20" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <polygon fill="currentColor"
+                            points="20 5.26683 14.343 0 12.929 1.21678 16.172 4.2264 0 4.2264 0 6.18481 16.172 6.18481 12.929 9.53046 14.343 11">
+                        </polygon>
                     </svg>
                 </a>
             </div>
-            <div class="h-[50%] xl:h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]">
-                <img src="/resources/DSC6037.jpg" alt="" class="w-full h-full object-cover">
-            </div>
-        </div>
-        <div class="w-screen grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/000003530005.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/000003530008.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/000003530010.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/000003530023.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/000005180001.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/imm001_0A.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/imm004_3A.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <div class="text-white aspect-square border-r-[1px] border-b-[1px] border-[#808080]">
-                <img src="/images/imm005_4A.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div>
-            <!-- <div class="text-white aspect-square border-b-[1px] border-[#ffffff26]">
-                <img src="/images/imm009_9.jpg" alt="" srcset="" class="w-full h-full object-cover object-center">
-            </div> -->
-        </div>
-        <div class="w-screen h-[160vh] xl:h-[70vh] flex flex-col-reverse xl:flex-row">
-            <div
-                class="h-[50%] xl:h-full w-full xl:w-1/2 border-r-[1px] border-b-[1px] border-[#ffffff26] p-12 flex flex-col relative">
-                <h3 class="text-[#ffffff80] text-xl">Concept Design</h3>
-                <h2 class="text-white text-5xl xl:text-6xl font-bold mt-8">Porsche Club</h2>
-                <p class="text-white text-lg xl:text-xl mt-12 leading-8">
-                    Developed as a showcase project, this Porsche Club
-                    website
-                    highlights my skills in web design and
-                    development. The site features a sleek, user-friendly interface, engaging content on Porsche
-                    vehicles, and interactive elements for a dynamic user experience. Designed to cater to Porsche
-                    enthusiasts, it includes news, events, and technical resources, demonstrating my ability to create
-                    visually appealing and functional websites.
-                </p>
-                <a href="https://jellewijma.github.io/porsche-club"
-                    class="text-white w-8 h-8 text-center leading-7 absolute bottom-12 right-14">
-                    <svg width="40px" height="40px" viewBox="0 -4.5 20 20" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                            <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)"
-                                fill="#ffffff80">
-                                <g id="icons" transform="translate(56.000000, 160.000000)">
-                                    <polygon id="arrow_right-[#346]"
-                                        points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                                    </polygon>
-                                </g>
-                            </g>
-                        </g>
-                    </svg>
-                </a>
-            </div>
-            <div class="h-[50%] xl:h-full w-full xl:w-1/2 border-b-[1px] border-[#ffffff26]">
-                <img src="/resources/mockup.jpg" alt="" class="w-full h-full object-cover">
-            </div>
-        </div>
-        <div class="w-screen h-[90vh] border-t-[1px] border-[#ffffff26] text-white">
-            <div class="h-[45vh] p-20 font-semibold text-5xl border-b-[1px] border-[#ffffff26]">
-                Photography
-            </div>
-            <div class="h-[45vh] pl-20 flex">
-                <div class="w-[33vw] border-x-[1px] border-[#ffffff26] p-8">
-                    <h3>types of Photography</h3>
-                    <p>some text about the different photography styles I shoot</p>
-                </div>
-                <div
-                    class="w-[21vw] p-8 flex flex-col justify-between bg-[url('/images/000003530008.jpg')] bg-cover bg-center grayscale hover:grayscale-0 duration-100 hover:duration-100 group">
-                    <div class="text-5xl font-bold">CAR</div>
-                    <div class="w-full flex justify-between">
-                        <div class="text-5xl font-bold">01</div>
-                        <div
-                            class="text-5xl font-bold opacity-0 group-hover:opacity-100 group-hover:duration-100 duration-100">
-                            ->
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="w-[21vw] border-x-[1px] border-[#ffffff26] p-8 flex flex-col justify-between bg-[url('/images/imm005_4A.jpg')] bg-cover bg-center grayscale hover:grayscale-0 duration-100 hover:duration-100 group">
-                    <div class=" text-5xl font-bold">LANDSCAPE</div>
-                    <div class="w-full flex justify-between">
-                        <div class="text-5xl font-bold">02</div>
-                        <div
-                            class="text-5xl font-bold opacity-0 group-hover:opacity-100 group-hover:duration-100 duration-100">
-                            ->
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="w-[21vw] border-r-[1px] border-[#ffffff26] p-8 flex flex-col justify-between bg-[url('/images/imm004_3A.jpg')] bg-cover bg-center grayscale hover:grayscale-0 duration-100 hover:duration-100 group">
-                    <div class=" text-5xl font-bold">STREET</div>
-                    <div class="w-full flex justify-between">
-                        <div class="text-5xl font-bold">03</div>
-                        <div
-                            class="text-5xl font-bold opacity-0 group-hover:opacity-100 duration-100 group-hover:duration-100">
-                            ->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <a href="/gallery.html?filter=car"
+                class="group flex min-h-[360px] flex-col justify-between bg-[url('/images/000003530008.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-[#ffffff26]">
+                <span class="text-5xl font-bold">CAR</span>
+                <span class="flex items-end justify-between text-5xl font-bold">
+                    01
+                    <span class="opacity-0 transition group-hover:opacity-100">-&gt;</span>
+                </span>
+            </a>
+            <a href="/gallery.html?filter=landscape"
+                class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/images/imm005_4A.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-t-0">
+                <span class="text-5xl font-bold">LANDSCAPE</span>
+                <span class="flex items-end justify-between text-5xl font-bold">
+                    02
+                    <span class="opacity-0 transition group-hover:opacity-100">-&gt;</span>
+                </span>
+            </a>
+            <a href="/gallery.html?filter=street"
+                class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/images/imm004_3A.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-t-0">
+                <span class="text-5xl font-bold">STREET</span>
+                <span class="flex items-end justify-between text-5xl font-bold">
+                    03
+                    <span class="opacity-0 transition group-hover:opacity-100">-&gt;</span>
+                </span>
+            </a>
+        </section>
     </main>
-    <footer></footer>
 
-
-    <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 backdrop-blur-sm"></div>
-
-        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div
-                    class="relative transform overflow-hidden bg-black text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border-[1px] border-[#ffffff26]">
-                    <div class="bg-black px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b-[1px] border-[#ffffff26]">
-                        <div class="sm:flex sm:items-start">
-                            <div
-                                class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-800 sm:mx-0 sm:h-10 sm:w-10">
-                                <svg class="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                </svg>
-                            </div>
-                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                                <h3 class="text-base font-semibold leading-6 text-white" id="modal-title">Live
-                                    Development</h3>
-                                <div class="mt-2">
-                                    <p class="text-sm text-white">This website is being build in public. Please note
-                                        this website is not finished, feel free to look around.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-black px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" id="button"
-                            class="mt-3 inline-flex w-full justify-center bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-[#ffffff26] hover:bg-neutral-950 sm:mt-0 sm:w-auto">Oke</button>
-                    </div>
-                </div>
-            </div>
+    <footer class="grid border-b border-[#ffffff26] xl:grid-cols-2">
+        <div class="border-b border-[#ffffff26] p-6 sm:p-12 xl:border-b-0 xl:border-r">
+            <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">Contact</p>
+            <h2 class="mt-8 text-4xl font-bold leading-none sm:text-6xl">Have a project in mind?</h2>
         </div>
-    </div>
+        <div class="flex flex-col justify-between p-6 sm:p-12">
+            <p class="max-w-xl text-lg leading-8 text-[#ffffffb3]">
+                I am open to small web builds, visual concepts, and photography-led portfolio work.
+            </p>
+            <a href="https://github.com/jellewijma"
+                class="mt-10 inline-flex w-fit border border-[#ffffff40] px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc] transition hover:border-white hover:text-white">github.com/jellewijma</a>
+        </div>
+    </footer>
 
+    <style>
+        .scroll-hide {
+            -ms-overflow-style: none;
+            overflow-y: scroll;
+            scrollbar-width: none;
+        }
+
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+    <script>
+        const mobileMenuButton = document.getElementById("mobile-menu-button");
+        const siteMenu = document.getElementById("site-menu");
+
+        function closeMenu() {
+            siteMenu.classList.add("hidden");
+            mobileMenuButton.setAttribute("aria-expanded", "false");
+        }
+
+        mobileMenuButton.addEventListener("click", function () {
+            const isOpen = !siteMenu.classList.contains("hidden");
+
+            siteMenu.classList.toggle("hidden");
+            mobileMenuButton.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        siteMenu.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", closeMenu);
+        });
+    </script>
 </body>
-
-<style>
-    .scroll-hide {
-        -ms-overflow-style: none;
-        /* for Internet Explorer, Edge */
-        /* scrollbar-width: none; */
-        /* for Firefox */
-        overflow-y: scroll;
-    }
-
-    .scroll-hide::-webkit-scrollbar {
-        display: none;
-        /* for Chrome, Safari, and Opera */
-    }
-</style>
-
-<script>
-    // on load
-    window.onload = function () {
-        // get the button
-        var button = document.getElementById("button");
-
-        // add event listener
-        button.addEventListener("click", function () {
-            // get the modal
-            var modal = document.querySelector(".z-20");
-
-            // hide the modal
-            modal.style.display = "none";
-        });
-    };
-
-    // on click
-    document.getElementById("mobile-menu").addEventListener("click", function () {
-        // get the menu
-        var menu = document.querySelectorAll(".xl\\:opacity-0, .xl\\:opacity-100");
-
-        // toggle the menu
-        menu.forEach(function (element) {
-            element.classList.toggle("opacity-0");
-            element.classList.toggle("opacity-100");
-        });
-    });
-</script>
 
 </html>
