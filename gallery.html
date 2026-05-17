@@ -2,243 +2,273 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jelle Wijma | Portfolio</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Photography gallery by Jelle Wijma, featuring automotive, street, and landscape images.">
+    <title>Jelle Wijma | Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-black overflow-x-hidden scroll-hide">
-  <nav class="w-screen h-[176px] xl:h-[88px] flex flex-col xl:flex-row text-white fixed z-10 xl:backdrop-blur-lg">
-    <div
-      class="w-screen h-[88px] flex items-center px-12 border-r-[1px] border-b-[1px] border-[#ffffff26] font-bold backdrop-blur-lg xl:backdrop-blur-[0px] flex justify-between">
-      <a href="./index.html" class="">JelleWijma</a>
-      <div class="xl:hidden drop-shadow" id="mobile-menu">
-        <svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g id="menu">
-            <path id="Icon" d="M12 21H60M12 36H60M12 51H60" stroke="white" stroke-width="7" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </g>
-        </svg>
-      </div>
+<body class="bg-black text-white overflow-x-hidden scroll-hide">
+    <nav class="fixed inset-x-0 top-0 z-30 border-b border-[#ffffff26] bg-black/70 text-white backdrop-blur-lg">
+        <div class="flex h-[88px] items-center justify-between">
+            <a href="/index.html"
+                class="flex h-full w-1/2 items-center border-r border-[#ffffff26] px-6 text-base font-bold tracking-[0.08em] sm:px-12 xl:w-1/4">JelleWijma</a>
+            <button type="button" id="mobile-menu-button"
+                class="flex h-full w-[88px] items-center justify-center border-l border-[#ffffff26] xl:hidden"
+                aria-controls="site-menu" aria-expanded="false" aria-label="Open navigation">
+                <span class="sr-only">Open navigation</span>
+                <svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M12 21H60M12 36H60M12 51H60" stroke="white" stroke-width="7" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+            <div id="site-menu"
+                class="hidden absolute left-0 top-[88px] w-screen border-b border-[#ffffff26] bg-black/90 backdrop-blur-lg xl:static xl:flex xl:h-full xl:w-3/4 xl:border-b-0 xl:bg-transparent xl:backdrop-blur-0">
+                <a href="/index.html#projects"
+                    class="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r">Projects</a>
+                <a href="/index.html#about"
+                    class="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r">About</a>
+                <a href="/gallery.html"
+                    class="flex h-[72px] flex-1 items-center px-6 text-sm font-medium text-white transition hover:text-white sm:px-12 xl:h-full">Gallery</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-[88px]">
+        <header class="grid border-b border-[#ffffff26] xl:grid-cols-[1.1fr_0.9fr]">
+            <div class="p-6 sm:p-12 xl:border-r xl:border-[#ffffff26]">
+                <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">Selected photography</p>
+                <h1 class="mt-8 text-5xl font-bold leading-none sm:text-7xl">Gallery</h1>
+            </div>
+            <div class="flex flex-col justify-end border-t border-[#ffffff26] p-6 sm:p-12 xl:border-t-0">
+                <p class="max-w-xl text-lg leading-8 text-[#ffffffb3]">
+                    Automotive, street, and landscape images from the same visual world as the portfolio.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-3" aria-label="Gallery filters">
+                    <button type="button" data-filter="all"
+                        class="filter-button border border-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white">All</button>
+                    <button type="button" data-filter="car"
+                        class="filter-button border border-[#ffffff40] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#ffffff99] transition hover:border-white hover:text-white">Car</button>
+                    <button type="button" data-filter="landscape"
+                        class="filter-button border border-[#ffffff40] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#ffffff99] transition hover:border-white hover:text-white">Landscape</button>
+                    <button type="button" data-filter="street"
+                        class="filter-button border border-[#ffffff40] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#ffffff99] transition hover:border-white hover:text-white">Street</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" aria-label="Photography grid">
+            <button type="button" data-category="car" data-image="/images/000003530005.jpg"
+                data-title="Vrolijke Drukte"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r">
+                <img src="/images/000003530005.jpg" alt="Classic car scene with warm color"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Vrolijke Drukte</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/images/000003530008.jpg" data-title="Stoer Chic"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left xl:border-r">
+                <img src="/images/000003530008.jpg" alt="Low angle automotive photograph"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Stoer Chic</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/images/000003530010.jpg" data-title="Hout Oud"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r xl:border-r-0">
+                <img src="/images/000003530010.jpg" alt="Vintage automotive detail near wood textures"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Hout Oud</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/images/000003530023.jpg" data-title="Helder Gebouw"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left xl:border-r">
+                <img src="/images/000003530023.jpg" alt="Automotive photograph near modern architecture"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Helder Gebouw</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/images/000005180001.jpg" data-title="Chrome Line"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r">
+                <img src="/images/000005180001.jpg" alt="Automotive chrome detail"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Chrome Line</span>
+                </span>
+            </button>
+            <button type="button" data-category="street" data-image="/images/imm001_0A.jpg" data-title="Passing Frame"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left">
+                <img src="/images/imm001_0A.jpg" alt="Street photograph captured on film"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Street</span>
+                    <span class="mt-2 block text-2xl font-bold">Passing Frame</span>
+                </span>
+            </button>
+            <button type="button" data-category="street" data-image="/images/imm004_3A.jpg" data-title="Quiet Corner"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r xl:border-r">
+                <img src="/images/imm004_3A.jpg" alt="Moody street scene"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Street</span>
+                    <span class="mt-2 block text-2xl font-bold">Quiet Corner</span>
+                </span>
+            </button>
+            <button type="button" data-category="landscape" data-image="/images/imm005_4A.jpg" data-title="Open Light"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left">
+                <img src="/images/imm005_4A.jpg" alt="High contrast landscape image"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Landscape</span>
+                    <span class="mt-2 block text-2xl font-bold">Open Light</span>
+                </span>
+            </button>
+            <button type="button" data-category="landscape" data-image="/images/imm009_9.jpg" data-title="Last Ridge"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r xl:border-r-0">
+                <img src="/images/imm009_9.jpg" alt="Landscape photograph with a distant ridge"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Landscape</span>
+                    <span class="mt-2 block text-2xl font-bold">Last Ridge</span>
+                </span>
+            </button>
+        </section>
+    </main>
+
+    <div id="lightbox" class="fixed inset-0 z-40 hidden bg-black/90 backdrop-blur-sm" role="dialog" aria-modal="true"
+        aria-labelledby="lightbox-title">
+        <button type="button" id="lightbox-close"
+            class="absolute right-0 top-0 z-10 flex h-[88px] w-[88px] items-center justify-center border-b border-l border-[#ffffff26] text-3xl leading-none"
+            aria-label="Close image">&times;</button>
+        <div class="flex min-h-screen flex-col justify-center p-4 sm:p-10">
+            <img id="lightbox-image" src="/images/000003530005.jpg" alt=""
+                class="max-h-[78vh] w-full object-contain">
+            <div class="mx-auto mt-6 flex w-full max-w-5xl items-center justify-between border-t border-[#ffffff26] pt-4">
+                <h2 id="lightbox-title" class="text-2xl font-bold">Image title</h2>
+                <p id="lightbox-category" class="text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Category</p>
+            </div>
+        </div>
     </div>
-    <div
-      class="w-screen h-[88px] flex justify-between items-center border-b-[1px] border-[#ffffff26] px-12 text-[#ffffff80] backdrop-blur-lg xl:backdrop-blur-[0px] opacity-0 xl:opacity-100">
-      <div class="">Projects</div>
-      <div class="">About</div>
-      <a href="./gallery.html" class="">Gallery</a>
-    </div>
-  </nav>
-  <main class="w-screen pt-0 xl:pt-[88px]">
-    <div class="w-screen grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/000003530005.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Vrolijke Drukte</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/000003530008.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Stoer Chic</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/000003530010.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Hout Oud</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+    <style>
+        .scroll-hide {
+            -ms-overflow-style: none;
+            overflow-y: scroll;
+            scrollbar-width: none;
+        }
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/000003530023.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Helder Gebouw</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/000005180001.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Helder Gebouw</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+    <script>
+        const mobileMenuButton = document.getElementById("mobile-menu-button");
+        const siteMenu = document.getElementById("site-menu");
+        const filterButtons = document.querySelectorAll(".filter-button");
+        const galleryItems = document.querySelectorAll(".gallery-item");
+        const lightbox = document.getElementById("lightbox");
+        const lightboxClose = document.getElementById("lightbox-close");
+        const lightboxImage = document.getElementById("lightbox-image");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxCategory = document.getElementById("lightbox-category");
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/imm001_0A.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Helder Gebouw</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+        function closeMenu() {
+            siteMenu.classList.add("hidden");
+            mobileMenuButton.setAttribute("aria-expanded", "false");
+        }
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/imm004_3A.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Helder Gebouw</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+        function setActiveFilter(activeButton) {
+            filterButtons.forEach(function (button) {
+                const isActive = button === activeButton;
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/imm005_4A.jpg')] bg-cover bg-center flex justify-between flex-col">
-        <div class="w-full p-4 opacity-0 ">Helder Gebouw</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+                button.classList.toggle("border-white", isActive);
+                button.classList.toggle("text-white", isActive);
+                button.classList.toggle("border-[#ffffff40]", !isActive);
+                button.classList.toggle("text-[#ffffff99]", !isActive);
+            });
+        }
 
-      </div>
-      <div
-        class="text-white aspect-square border-b-[1px] border-[#ffffff26] bg-[url('/images/imm009_9.jpg')] bg-cover bg-center flex justify-between flex-col ">
-        <div class="w-full p-4 opacity-0 ">Helder Gebouw</div>
-        <a class="w-full flex justify-end p-4 opacity-0 "><svg width="30px" height="30px" viewBox="0 -4.5 20 20"
-            version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" fill="none" fill-rule="evenodd">
-              <g id="Dribbble-Light-Preview" transform="translate(-300.000000, -6643.000000)" fill="#ffffff">
-                <g id="icons" transform="translate(56.000000, 160.000000)">
-                  <polygon id="arrow_right-[#346]"
-                    points="264 6488.26683 258.343 6483 256.929 6484.21678 260.172 6487.2264 244 6487.2264 244 6489.18481 260.172 6489.18481 256.929 6492.53046 258.343 6494">
-                  </polygon>
-                </g>
-              </g>
-            </g>
-          </svg>
-        </a>
+        function filterGallery(filter) {
+            galleryItems.forEach(function (item) {
+                const shouldShow = filter === "all" || item.dataset.category === filter;
 
-      </div>
-    </div>
-  </main>
-  <footer></footer>
+                item.classList.toggle("hidden", !shouldShow);
+            });
+        }
+
+        function openLightbox(item) {
+            lightboxImage.src = item.dataset.image;
+            lightboxImage.alt = item.querySelector("img").alt;
+            lightboxTitle.textContent = item.dataset.title;
+            lightboxCategory.textContent = item.dataset.category;
+            lightbox.classList.remove("hidden");
+            lightboxClose.focus();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.add("hidden");
+        }
+
+        mobileMenuButton.addEventListener("click", function () {
+            const isOpen = !siteMenu.classList.contains("hidden");
+
+            siteMenu.classList.toggle("hidden");
+            mobileMenuButton.setAttribute("aria-expanded", String(!isOpen));
+        });
+
+        siteMenu.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", closeMenu);
+        });
+
+        filterButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                setActiveFilter(button);
+                filterGallery(button.dataset.filter);
+            });
+        });
+
+        galleryItems.forEach(function (item) {
+            item.addEventListener("click", function () {
+                openLightbox(item);
+            });
+        });
+
+        lightboxClose.addEventListener("click", closeLightbox);
+        lightbox.addEventListener("click", function (event) {
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeLightbox();
+            }
+        });
+
+        const allowedFilters = ["all", "car", "landscape", "street"];
+        const initialFilter = new URLSearchParams(window.location.search).get("filter");
+        const initialButton = allowedFilters.includes(initialFilter)
+            ? document.querySelector('[data-filter="' + initialFilter + '"]')
+            : null;
+
+        if (initialButton) {
+            setActiveFilter(initialButton);
+            filterGallery(initialFilter);
+        }
+    </script>
 </body>
-
-<style>
-  .scroll-hide {
-    -ms-overflow-style: none;
-    /* for Internet Explorer, Edge */
-    /* scrollbar-width: none; */
-    /* for Firefox */
-    overflow-y: scroll;
-  }
-
-  .scroll-hide::-webkit-scrollbar {
-    display: none;
-    /* for Chrome, Safari, and Opera */
-  }
-</style>
-
-<script>
-  // on load
-  window.onload = function () {
-    // get the button
-    var button = document.getElementById("button");
-
-    // add event listener
-    button.addEventListener("click", function () {
-      // get the modal
-      var modal = document.querySelector(".z-20");
-
-      // hide the modal
-      modal.style.display = "none";
-    });
-  };
-
-  // on click
-  document.getElementById("mobile-menu").addEventListener("click", function () {
-    // get the menu
-    var menu = document.querySelectorAll(".xl\\:opacity-0, .xl\\:opacity-100");
-
-    // toggle the menu
-    menu.forEach(function (element) {
-      element.classList.toggle("opacity-0");
-      element.classList.toggle("opacity-100");
-    });
-  });
-</script>
 
 </html>
