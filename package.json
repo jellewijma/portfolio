@@ -4,5 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "vercel-build": "echo 'Static site: no build step required.'"
+  },
+  "dependencies": {
+    "convex": "^1.39.1"
   }
 }
