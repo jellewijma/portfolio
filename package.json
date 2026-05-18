@@ -3,9 +3,15 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "vercel-build": "echo 'Static site: no build step required.'"
+    "build:css": "tailwindcss -i ./tailwind.input.css -o ./styles.css --minify",
+    "dev:css": "tailwindcss -i ./tailwind.input.css -o ./styles.css --watch",
+    "vercel-build": "npm run build:css"
   },
   "dependencies": {
     "convex": "^1.39.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.0",
+    "tailwindcss": "^4.3.0"
   }
 }
