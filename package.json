@@ -14,11 +14,13 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
+    "esbuild": "^0.28.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "convex": "^1.39.1"
   }
 }
