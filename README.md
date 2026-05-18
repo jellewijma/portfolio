@@ -12,7 +12,7 @@ npm install
 
 ```text
 assets/
-  css/                 Generated Tailwind CSS and shared site CSS
+  css/                 Tailwind input/output and shared global CSS
   icons/               Favicon and SVG assets
   images/
     optimized/         Generated responsive images used by the site
@@ -47,7 +47,7 @@ Set the admin password in Convex before using `/admin.html`:
 npx convex env set ADMIN_PASSWORD "replace-with-a-strong-password"
 ```
 
-The public site and admin UI call the Convex HTTP API configured in `config.js`.
+The public site and admin UI call the Convex HTTP API configured in `assets/js/runtime-config.js`.
 
 Run Convex locally with:
 

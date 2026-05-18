@@ -244,7 +244,7 @@
     });
 
     if (!apiBase) {
-        setStatus("Set window.PORTFOLIO_API_BASE in config.js before using admin.");
+        setStatus("Set window.PORTFOLIO_API_BASE in assets/js/runtime-config.js before using admin.");
         return;
     }
 
