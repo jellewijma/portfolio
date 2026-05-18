@@ -164,16 +164,35 @@
         setStatus("Signed in. Changes publish immediately when saved.");
     }
 
+    async function verifyMagicLink() {
+        const params = new URLSearchParams(window.location.search);
+        const magicToken = params.get("token");
+
+        if (!magicToken) {
+            return false;
+        }
+
+        setStatus("Verifying sign-in link...");
+        const session = await api("/api/login/verify", {
+            method: "POST",
+            body: JSON.stringify({ token: magicToken }),
+        });
+        localStorage.setItem(tokenKey, session.token);
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showAdmin();
+        await loadContent();
+        return true;
+    }
+
     loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
         try {
-            setStatus("Signing in...");
-            const password = document.getElementById("admin-password").value;
-            const session = await api("/api/login", { method: "POST", body: JSON.stringify({ password }) });
-            localStorage.setItem(tokenKey, session.token);
-            showAdmin();
-            await loadContent();
+            setStatus("Sending sign-in link...");
+            const email = document.getElementById("admin-email").value;
+            await api("/api/login", { method: "POST", body: JSON.stringify({ email }) });
+            loginForm.reset();
+            setStatus("Check your email for a sign-in link. It expires in 15 minutes.");
         } catch (error) {
             setStatus(error.message);
         }
@@ -248,12 +267,24 @@
         return;
     }
 
-    if (token()) {
-        showAdmin();
-        loadContent().catch(function () {
+    verifyMagicLink()
+        .then(function (handled) {
+            if (handled || !token()) {
+                return;
+            }
+
+            showAdmin();
+            return loadContent().catch(function () {
+                localStorage.removeItem(tokenKey);
+                showLogin();
+                setStatus("Session expired. Sign in again.");
+            });
+        })
+        .catch(function (error) {
             localStorage.removeItem(tokenKey);
+            window.history.replaceState({}, document.title, window.location.pathname);
             showLogin();
-            setStatus("Session expired. Sign in again.");
+            setStatus(error.message);
         });
-    }
+
 })();

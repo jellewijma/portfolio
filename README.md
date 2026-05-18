@@ -41,10 +41,13 @@ The build regenerates optimized responsive image assets and the minified Tailwin
 
 ## Convex Admin
 
-Set the admin password in Convex before using `/admin.html`:
+Set the admin email and magic-link delivery settings in Convex before using `/admin.html`:
 
 ```sh
-npx convex env set ADMIN_PASSWORD "replace-with-a-strong-password"
+npx convex env set ADMIN_EMAIL "you@example.com"
+npx convex env set ADMIN_SITE_URL "https://admin.jellewijma.com"
+npx convex env set RESEND_API_KEY "re_..."
+npx convex env set MAGIC_LINK_FROM "Portfolio Admin <admin@your-domain.example>"
 ```
 
 The public site and admin UI call the Convex HTTP API configured in `assets/js/runtime-config.js`.

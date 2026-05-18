@@ -7,6 +7,13 @@ export default defineSchema({
         expiresAt: v.number(),
         createdAt: v.number(),
     }).index("by_token", ["token"]),
+    magicLinks: defineTable({
+        tokenHash: v.string(),
+        email: v.string(),
+        expiresAt: v.number(),
+        createdAt: v.number(),
+        usedAt: v.optional(v.number()),
+    }).index("by_token_hash", ["tokenHash"]),
     photos: defineTable({
         title: v.string(),
         category: v.union(v.literal("car"), v.literal("landscape"), v.literal("street")),

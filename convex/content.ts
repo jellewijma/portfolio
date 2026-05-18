@@ -2,8 +2,17 @@ import { mutationGeneric, queryGeneric } from "convex/server";
 import { v } from "convex/values";
 
 const sessionDurationMs = 7 * 24 * 60 * 60 * 1000;
+const magicLinkDurationMs = 15 * 60 * 1000;
 
 const categoryValidator = v.union(v.literal("car"), v.literal("landscape"), v.literal("street"));
+
+async function sha256(value: string) {
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+}
 
 async function requireSession(ctx: any, token: string) {
     const session = await ctx.db
@@ -24,20 +33,49 @@ async function imageUrl(ctx: any, storageId?: string, fallbackUrl?: string) {
     return fallbackUrl || "";
 }
 
-export const login = mutationGeneric({
-    args: { password: v.string() },
+export const requestMagicLink = mutationGeneric({
+    args: { email: v.string() },
     handler: async (ctx, args) => {
-        const expectedPassword = process.env.ADMIN_PASSWORD;
+        const adminEmail = process.env.ADMIN_EMAIL;
 
-        if (!expectedPassword) {
-            throw new Error("ADMIN_PASSWORD is not configured in Convex environment variables.");
+        if (!adminEmail) {
+            throw new Error("ADMIN_EMAIL is not configured in Convex environment variables.");
         }
 
-        if (args.password !== expectedPassword) {
-            throw new Error("Invalid password.");
+        const email = args.email.trim().toLowerCase();
+        if (email !== adminEmail.trim().toLowerCase()) {
+            return { sent: false };
         }
 
         const now = Date.now();
+        const linkToken = crypto.randomUUID() + crypto.randomUUID();
+        await ctx.db.insert("magicLinks", {
+            tokenHash: await sha256(linkToken),
+            email,
+            createdAt: now,
+            expiresAt: now + magicLinkDurationMs,
+        });
+
+        return { sent: true, email, token: linkToken, expiresAt: now + magicLinkDurationMs };
+    },
+});
+
+export const verifyMagicLink = mutationGeneric({
+    args: { token: v.string() },
+    handler: async (ctx, args) => {
+        const tokenHash = await sha256(args.token);
+        const magicLink = await ctx.db
+            .query("magicLinks")
+            .withIndex("by_token_hash", (q: any) => q.eq("tokenHash", tokenHash))
+            .unique();
+
+        if (!magicLink || magicLink.usedAt || magicLink.expiresAt < Date.now()) {
+            throw new Error("This sign-in link is invalid or expired.");
+        }
+
+        const now = Date.now();
+        await ctx.db.patch(magicLink._id, { usedAt: now });
+
         const token = crypto.randomUUID();
         await ctx.db.insert("sessions", {
             token,
