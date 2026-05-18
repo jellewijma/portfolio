@@ -3,15 +3,21 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "build:css": "tailwindcss -i ./tailwind.input.css -o ./styles.css --minify",
-    "dev:css": "tailwindcss -i ./tailwind.input.css -o ./styles.css --watch",
-    "vercel-build": "npm run build:css"
-  },
-  "dependencies": {
-    "convex": "^1.39.1"
+    "build": "npm run optimize:images && npm run build:css",
+    "build:css": "tailwindcss -i ./tailwind.input.css -o ./assets/css/styles.css --minify",
+    "deploy:convex": "convex deploy",
+    "dev:css": "tailwindcss -i ./tailwind.input.css -o ./assets/css/styles.css --watch",
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "check:assets": "node scripts/check-assets.mjs",
+    "check": "npm run build:css && npm run check:assets && npm audit --audit-level=moderate",
+    "vercel-build": "npm run build"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0"
+  },
+  "dependencies": {
+    "convex": "^1.39.1"
   }
 }
