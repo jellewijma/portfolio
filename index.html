@@ -4,13 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
     <meta name="description"
         content="Portfolio of Jelle Wijma, a web developer and photographer creating clean interfaces, visual systems, and image-led digital experiences.">
     <title>Jelle Wijma | Web Developer & Photographer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/tailwind.generated.css">
+    <link rel="stylesheet" href="/assets/css/global.css">
+    <script src="/assets/js/runtime-config.js" defer></script>
+    <script src="/assets/js/main.js" defer></script>
 </head>
 
 <body class="bg-black text-white overflow-x-hidden scroll-hide">
+    <div id="page-shell">
     <nav class="fixed inset-x-0 top-0 z-30 border-b border-[#ffffff26] bg-black/70 text-white backdrop-blur-lg">
         <div class="flex h-[88px] items-center justify-between">
             <a href="/index.html"
@@ -67,34 +72,53 @@
                 </div>
             </div>
             <div class="order-1 min-h-[60vh] xl:order-2">
-                <img src="/resources/DSC6037.jpg" alt="Jelle standing in front of mountains"
-                    class="h-full w-full object-cover" fetchpriority="high">
+                <picture class="block h-full w-full">
+                    <source type="image/webp"
+                        srcset="/assets/images/optimized/hero-mountain-portrait-480.webp 480w, /assets/images/optimized/hero-mountain-portrait-768.webp 768w, /assets/images/optimized/hero-mountain-portrait-1200.webp 1200w, /assets/images/optimized/hero-mountain-portrait-1600.webp 1600w"
+                        sizes="(min-width: 1280px) 50vw, 100vw">
+                    <img src="/assets/images/optimized/hero-mountain-portrait-1200.jpg"
+                        srcset="/assets/images/optimized/hero-mountain-portrait-480.jpg 480w, /assets/images/optimized/hero-mountain-portrait-768.jpg 768w, /assets/images/optimized/hero-mountain-portrait-1200.jpg 1200w, /assets/images/optimized/hero-mountain-portrait-1600.jpg 1600w"
+                        sizes="(min-width: 1280px) 50vw, 100vw" width="2048" height="1365"
+                        alt="Jelle standing in front of mountains" class="h-full w-full object-cover" fetchpriority="high">
+                </picture>
             </div>
         </section>
 
         <section aria-label="Selected photography" class="grid grid-cols-2 border-b border-[#ffffff26] md:grid-cols-4">
             <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
-                <img src="/images/000003530005.jpg" alt="Classic car detail photographed in warm light"
-                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <img src="/assets/images/optimized/classic-car-warm-scene-480.jpg"
+                    srcset="/assets/images/optimized/classic-car-warm-scene-480.jpg 480w, /assets/images/optimized/classic-car-warm-scene-768.jpg 768w, /assets/images/optimized/classic-car-warm-scene-1200.jpg 1200w, /assets/images/optimized/classic-car-warm-scene-1600.jpg 1600w"
+                    sizes="(min-width: 768px) 25vw, 50vw" width="2075" height="3130"
+                    alt="Classic car detail photographed in warm light"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
                 <span
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Car
                     work</span>
             </a>
             <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
-                <img src="/images/000003530008.jpg" alt="Car photographed from a low angle"
-                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <img src="/assets/images/optimized/low-angle-automotive-480.jpg"
+                    srcset="/assets/images/optimized/low-angle-automotive-480.jpg 480w, /assets/images/optimized/low-angle-automotive-768.jpg 768w, /assets/images/optimized/low-angle-automotive-1200.jpg 1200w, /assets/images/optimized/low-angle-automotive-1600.jpg 1600w"
+                    sizes="(min-width: 768px) 25vw, 50vw" width="2075" height="3130"
+                    alt="Car photographed from a low angle"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
                 <span
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Automotive</span>
             </a>
             <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
-                <img src="/images/imm004_3A.jpg" alt="Street scene captured on film"
-                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <img src="/assets/images/optimized/street-quiet-corner-480.jpg"
+                    srcset="/assets/images/optimized/street-quiet-corner-480.jpg 480w, /assets/images/optimized/street-quiet-corner-768.jpg 768w, /assets/images/optimized/street-quiet-corner-1200.jpg 1200w"
+                    sizes="(min-width: 768px) 25vw, 50vw" width="1536" height="1024"
+                    alt="Street scene captured on film"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
                 <span
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Street</span>
             </a>
             <a href="/gallery.html" class="group relative aspect-square overflow-hidden">
-                <img src="/images/imm005_4A.jpg" alt="Landscape photograph with strong contrast"
-                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy">
+                <img src="/assets/images/optimized/landscape-open-light-480.jpg"
+                    srcset="/assets/images/optimized/landscape-open-light-480.jpg 480w, /assets/images/optimized/landscape-open-light-768.jpg 768w, /assets/images/optimized/landscape-open-light-1200.jpg 1200w"
+                    sizes="(min-width: 768px) 25vw, 50vw" width="1536" height="1024"
+                    alt="Landscape photograph with strong contrast"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
                 <span
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Landscape</span>
             </a>
@@ -105,13 +129,13 @@
                 <article class="flex min-h-[70vh] flex-col justify-between border-b border-[#ffffff26] p-6 sm:p-12 xl:border-r">
                     <div>
                         <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">Featured project</p>
-                        <h2 class="mt-8 text-5xl font-bold leading-none sm:text-6xl">Porsche Club</h2>
-                        <p class="mt-10 max-w-2xl text-lg leading-8 text-[#ffffffe6]">
+                        <h2 id="featured-project-title" class="mt-8 text-5xl font-bold leading-none sm:text-6xl">Porsche Club</h2>
+                        <p id="featured-project-description" class="mt-10 max-w-2xl text-lg leading-8 text-[#ffffffe6]">
                             A showcase concept for a premium automotive community. The site explores a sharp editorial
                             style, event-focused content, and a visual system that matches the energy of the brand.
                         </p>
                     </div>
-                    <a href="https://jellewijma.github.io/porsche-club"
+                    <a id="featured-project-link" href="https://jellewijma.github.io/porsche-club"
                         class="mt-12 inline-flex h-14 w-14 items-center justify-center border border-[#ffffff40] text-[#ffffffcc] transition hover:border-white hover:text-white"
                         aria-label="Open Porsche Club project">
                         <svg width="28" height="20" viewBox="0 -4.5 20 20" xmlns="http://www.w3.org/2000/svg"
@@ -123,8 +147,16 @@
                     </a>
                 </article>
                 <div class="min-h-[70vh] border-b border-[#ffffff26]">
-                    <img src="/resources/mockup.jpg" alt="Porsche Club website mockup on a laptop"
-                        class="h-full w-full object-cover" loading="lazy">
+                    <picture class="block h-full w-full">
+                        <source type="image/webp"
+                            srcset="/assets/images/optimized/porsche-club-mockup-480.webp 480w, /assets/images/optimized/porsche-club-mockup-768.webp 768w, /assets/images/optimized/porsche-club-mockup-1200.webp 1200w, /assets/images/optimized/porsche-club-mockup-1600.webp 1600w"
+                            sizes="(min-width: 1280px) 50vw, 100vw">
+                        <img id="featured-project-image" src="/assets/images/optimized/porsche-club-mockup-1200.jpg"
+                            srcset="/assets/images/optimized/porsche-club-mockup-480.jpg 480w, /assets/images/optimized/porsche-club-mockup-768.jpg 768w, /assets/images/optimized/porsche-club-mockup-1200.jpg 1200w, /assets/images/optimized/porsche-club-mockup-1600.jpg 1600w"
+                            sizes="(min-width: 1280px) 50vw, 100vw" width="5000" height="2813"
+                            alt="Porsche Club website mockup on a laptop" class="h-full w-full object-cover"
+                            loading="lazy" decoding="async">
+                    </picture>
                 </div>
             </div>
         </section>
@@ -177,7 +209,7 @@
                 </a>
             </div>
             <a href="/gallery.html?filter=car"
-                class="group flex min-h-[360px] flex-col justify-between bg-[url('/images/000003530008.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-[#ffffff26]">
+                class="group flex min-h-[360px] flex-col justify-between bg-[url('/assets/images/optimized/low-angle-automotive-768.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-[#ffffff26]">
                 <span class="text-5xl font-bold">CAR</span>
                 <span class="flex items-end justify-between text-5xl font-bold">
                     01
@@ -185,7 +217,7 @@
                 </span>
             </a>
             <a href="/gallery.html?filter=landscape"
-                class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/images/imm005_4A.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-t-0">
+                class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/assets/images/optimized/landscape-open-light-768.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-t-0">
                 <span class="text-5xl font-bold">LANDSCAPE</span>
                 <span class="flex items-end justify-between text-5xl font-bold">
                     02
@@ -193,7 +225,7 @@
                 </span>
             </a>
             <a href="/gallery.html?filter=street"
-                class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/images/imm004_3A.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-t-0">
+                class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/assets/images/optimized/street-quiet-corner-768.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-t-0">
                 <span class="text-5xl font-bold">STREET</span>
                 <span class="flex items-end justify-between text-5xl font-bold">
                     03
@@ -216,39 +248,7 @@
                 class="mt-10 inline-flex w-fit border border-[#ffffff40] px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc] transition hover:border-white hover:text-white">github.com/jellewijma</a>
         </div>
     </footer>
-
-    <style>
-        .scroll-hide {
-            -ms-overflow-style: none;
-            overflow-y: scroll;
-            scrollbar-width: none;
-        }
-
-        .scroll-hide::-webkit-scrollbar {
-            display: none;
-        }
-    </style>
-
-    <script>
-        const mobileMenuButton = document.getElementById("mobile-menu-button");
-        const siteMenu = document.getElementById("site-menu");
-
-        function closeMenu() {
-            siteMenu.classList.add("hidden");
-            mobileMenuButton.setAttribute("aria-expanded", "false");
-        }
-
-        mobileMenuButton.addEventListener("click", function () {
-            const isOpen = !siteMenu.classList.contains("hidden");
-
-            siteMenu.classList.toggle("hidden");
-            mobileMenuButton.setAttribute("aria-expanded", String(!isOpen));
-        });
-
-        siteMenu.querySelectorAll("a").forEach(function (link) {
-            link.addEventListener("click", closeMenu);
-        });
-    </script>
+    </div>
 </body>
 
 </html>

@@ -1,0 +1,28 @@
+.scroll-hide {
+    -ms-overflow-style: none;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+.scroll-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.lightbox-open {
+    overflow: hidden;
+}
+
+:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 4px;
+}
+
+.filter-button[aria-pressed="true"] {
+    border-color: #fff;
+    color: #fff;
+}
+
+.filter-button[aria-pressed="false"] {
+    border-color: #ffffff40;
+    color: #ffffff99;
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/admin",
+      "has": [{ "type": "host", "value": "jellewijma.com" }],
+      "destination": "https://admin.jellewijma.com",
+      "permanent": true
+    },
+    {
+      "source": "/admin.html",
+      "has": [{ "type": "host", "value": "jellewijma.com" }],
+      "destination": "https://admin.jellewijma.com",
+      "permanent": true
+    },
+    {
+      "source": "/admin",
+      "has": [{ "type": "host", "value": "www.jellewijma.com" }],
+      "destination": "https://admin.jellewijma.com",
+      "permanent": true
+    },
+    {
+      "source": "/admin.html",
+      "has": [{ "type": "host", "value": "www.jellewijma.com" }],
+      "destination": "https://admin.jellewijma.com",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "admin.jellewijma.com" }],
+      "destination": "/admin.html"
+    }
+  ]
+}

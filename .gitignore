@@ -1,0 +1,21 @@
+
+.env.local
+
+# Node dependencies
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime files
+.DS_Store
+
+# Environment files
+.env
+.env.*
+
+# Editor directories and files
+.vscode/
+*.swp
