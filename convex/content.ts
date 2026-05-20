@@ -5,6 +5,16 @@ const sessionDurationMs = 7 * 24 * 60 * 60 * 1000;
 const magicLinkDurationMs = 15 * 60 * 1000;
 
 const categoryValidator = v.union(v.literal("car"), v.literal("landscape"), v.literal("street"));
+const homeImageSlotValidator = v.union(
+    v.literal("hero"),
+    v.literal("selected-1"),
+    v.literal("selected-2"),
+    v.literal("selected-3"),
+    v.literal("selected-4"),
+    v.literal("category-car"),
+    v.literal("category-landscape"),
+    v.literal("category-street")
+);
 
 async function sha256(value: string) {
     const bytes = new TextEncoder().encode(value);
@@ -152,6 +162,15 @@ export const listPublicContent = queryGeneric({
                     order: project.order,
                 }))
             ),
+            homeImages: await Promise.all(
+                (await ctx.db.query("homeImages").collect()).map(async (homeImage: any) => ({
+                    id: homeImage._id,
+                    slot: homeImage.slot,
+                    title: homeImage.title,
+                    alt: homeImage.alt,
+                    imageUrl: await imageUrl(ctx, homeImage.storageId, homeImage.imageUrl),
+                }))
+            ),
         };
     },
 });
@@ -187,6 +206,15 @@ export const listAdminContent = queryGeneric({
                     featured: project.featured,
                     order: project.order,
                     published: project.published,
+                }))
+            ),
+            homeImages: await Promise.all(
+                (await ctx.db.query("homeImages").collect()).map(async (homeImage: any) => ({
+                    id: homeImage._id,
+                    slot: homeImage.slot,
+                    title: homeImage.title,
+                    alt: homeImage.alt,
+                    imageUrl: await imageUrl(ctx, homeImage.storageId, homeImage.imageUrl),
                 }))
             ),
         };
@@ -252,6 +280,46 @@ export const deletePhoto = mutationGeneric({
 
         await ctx.db.delete(args.id);
         return { ok: true };
+    },
+});
+
+export const saveHomeImage = mutationGeneric({
+    args: {
+        token: v.string(),
+        slot: homeImageSlotValidator,
+        title: v.string(),
+        alt: v.string(),
+        storageId: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        await requireSession(ctx, args.token);
+
+        const existing = await ctx.db
+            .query("homeImages")
+            .withIndex("by_slot", (q: any) => q.eq("slot", args.slot))
+            .unique();
+        const fields: any = {
+            slot: args.slot,
+            title: args.title,
+            alt: args.alt,
+            updatedAt: Date.now(),
+        };
+
+        if (args.storageId) fields.storageId = args.storageId;
+        if (args.imageUrl) fields.imageUrl = args.imageUrl;
+
+        if (existing) {
+            if (args.storageId && existing.storageId && existing.storageId !== args.storageId) {
+                await ctx.storage.delete(existing.storageId);
+            }
+
+            await ctx.db.patch(existing._id, fields);
+            return { id: existing._id };
+        }
+
+        const id = await ctx.db.insert("homeImages", fields);
+        return { id };
     },
 });
 

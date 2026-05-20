@@ -38,4 +38,12 @@ export default defineSchema({
         createdAt: v.number(),
         updatedAt: v.number(),
     }).index("by_published_order", ["published", "order"]),
+    homeImages: defineTable({
+        slot: v.string(),
+        title: v.string(),
+        alt: v.string(),
+        storageId: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+        updatedAt: v.number(),
+    }).index("by_slot", ["slot"]),
 });

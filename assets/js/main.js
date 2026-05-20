@@ -222,6 +222,55 @@
         }
     }
 
+    function removeResponsiveSources(image) {
+        const picture = image.closest("picture");
+        if (!picture) return;
+
+        picture.querySelectorAll("source").forEach(function (source) {
+            source.remove();
+        });
+    }
+
+    function renderHomeImages(homeImages) {
+        if (!homeImages || homeImages.length === 0) return;
+
+        homeImages.forEach(function (item) {
+            if (!item.imageUrl) return;
+
+            if (item.slot === "hero") {
+                const image = document.getElementById("home-image-hero");
+                if (!image) return;
+
+                removeResponsiveSources(image);
+                image.removeAttribute("srcset");
+                image.removeAttribute("sizes");
+                image.src = item.imageUrl;
+                image.alt = item.alt || item.title;
+                return;
+            }
+
+            const container = document.querySelector('[data-home-image-slot="' + item.slot + '"]');
+            if (!container) return;
+
+            const image = container.querySelector("img");
+            if (image) {
+                image.removeAttribute("srcset");
+                image.removeAttribute("sizes");
+                image.src = item.imageUrl;
+                image.alt = item.alt || item.title;
+            } else {
+                container.style.backgroundImage = 'url("' + item.imageUrl.replaceAll('"', "%22") + '")';
+            }
+
+            const label = Array.from(container.children).find(function (child) {
+                return child.tagName === "SPAN";
+            });
+            if (label && item.title && item.slot.startsWith("selected-")) {
+                label.textContent = item.title;
+            }
+        });
+    }
+
     async function loadDynamicContent() {
         if (!apiBase) return;
 
@@ -232,6 +281,7 @@
             const content = await response.json();
             renderDynamicGallery(content.photos || []);
             renderDynamicProject(content.projects || []);
+            renderHomeImages(content.homeImages || []);
         } catch {
             // Keep the static content available when Convex is not reachable.
         }

@@ -53,7 +53,7 @@ function requiredEnv(name: string) {
 
 function magicLinkUrl(token: string) {
     const siteUrl = requiredEnv("ADMIN_SITE_URL").replace(/\/$/, "");
-    return `${siteUrl}/?token=${encodeURIComponent(token)}`;
+    return `${siteUrl}/admin.html?token=${encodeURIComponent(token)}`;
 }
 
 function magicLinkEmailHtml(link: string) {
@@ -97,22 +97,6 @@ function magicLinkEmailHtml(link: string) {
                             <a href="${link}" style="display:inline-block; border:1px solid #ffffff; padding:16px 22px; color:#ffffff; font-size:13px; line-height:16px; font-weight:700; letter-spacing:0.2em; text-decoration:none; text-transform:uppercase;">
                                 Sign in
                             </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:0 28px 28px;">
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%; border:1px solid rgba(255,255,255,0.16); border-collapse:collapse;">
-                                <tr>
-                                    <td style="padding:18px; border-right:1px solid rgba(255,255,255,0.16); vertical-align:top;">
-                                        <div style="font-size:26px; line-height:30px; font-weight:700; color:#ffffff;">15</div>
-                                        <div style="margin-top:6px; font-size:11px; line-height:16px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:rgba(255,255,255,0.52);">Minutes</div>
-                                    </td>
-                                    <td style="padding:18px; vertical-align:top;">
-                                        <div style="font-size:26px; line-height:30px; font-weight:700; color:#ffffff;">01</div>
-                                        <div style="margin-top:6px; font-size:11px; line-height:16px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:rgba(255,255,255,0.52);">Use only</div>
-                                    </td>
-                                </tr>
-                            </table>
                         </td>
                     </tr>
                     <tr>
@@ -163,6 +147,7 @@ for (const path of [
     "/api/upload-url",
     "/api/photos",
     "/api/photos/delete",
+    "/api/home-images",
     "/api/projects",
     "/api/projects/delete",
 ]) {
@@ -279,6 +264,23 @@ http.route({
             const body = await readJson(request);
             const result = await ctx.runMutation(anyApi.content.deletePhoto, {
                 id: body.id,
+                token: tokenFromRequest(request),
+            });
+            return json(result);
+        } catch (error) {
+            return errorResponse(error);
+        }
+    }),
+});
+
+http.route({
+    path: "/api/home-images",
+    method: "POST",
+    handler: httpActionGeneric(async (ctx, request) => {
+        try {
+            const body = await readJson(request);
+            const result = await ctx.runMutation(anyApi.content.saveHomeImage, {
+                ...body,
                 token: tokenFromRequest(request),
             });
             return json(result);

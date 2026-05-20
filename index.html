@@ -77,7 +77,7 @@
                     <source type="image/webp"
                         srcset="/assets/images/optimized/hero-mountain-portrait-480.webp 480w, /assets/images/optimized/hero-mountain-portrait-768.webp 768w, /assets/images/optimized/hero-mountain-portrait-1200.webp 1200w, /assets/images/optimized/hero-mountain-portrait-1600.webp 1600w"
                         sizes="(min-width: 1280px) 50vw, 100vw">
-                    <img src="/assets/images/optimized/hero-mountain-portrait-1200.jpg"
+                    <img id="home-image-hero" src="/assets/images/optimized/hero-mountain-portrait-1200.jpg"
                         srcset="/assets/images/optimized/hero-mountain-portrait-480.jpg 480w, /assets/images/optimized/hero-mountain-portrait-768.jpg 768w, /assets/images/optimized/hero-mountain-portrait-1200.jpg 1200w, /assets/images/optimized/hero-mountain-portrait-1600.jpg 1600w"
                         sizes="(min-width: 1280px) 50vw, 100vw" width="2048" height="1365"
                         alt="Jelle standing in front of mountains" class="h-full w-full object-cover" fetchpriority="high">
@@ -86,7 +86,7 @@
         </section>
 
         <section aria-label="Selected photography" class="grid grid-cols-2 border-b border-[#ffffff26] md:grid-cols-4">
-            <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
+            <a href="/gallery.html" data-home-image-slot="selected-1" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
                 <img src="/assets/images/optimized/classic-car-warm-scene-480.jpg"
                     srcset="/assets/images/optimized/classic-car-warm-scene-480.jpg 480w, /assets/images/optimized/classic-car-warm-scene-768.jpg 768w, /assets/images/optimized/classic-car-warm-scene-1200.jpg 1200w, /assets/images/optimized/classic-car-warm-scene-1600.jpg 1600w"
                     sizes="(min-width: 768px) 25vw, 50vw" width="2075" height="3130"
@@ -96,7 +96,7 @@
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Car
                     work</span>
             </a>
-            <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
+            <a href="/gallery.html" data-home-image-slot="selected-2" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
                 <img src="/assets/images/optimized/low-angle-automotive-480.jpg"
                     srcset="/assets/images/optimized/low-angle-automotive-480.jpg 480w, /assets/images/optimized/low-angle-automotive-768.jpg 768w, /assets/images/optimized/low-angle-automotive-1200.jpg 1200w, /assets/images/optimized/low-angle-automotive-1600.jpg 1600w"
                     sizes="(min-width: 768px) 25vw, 50vw" width="2075" height="3130"
@@ -105,7 +105,7 @@
                 <span
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Automotive</span>
             </a>
-            <a href="/gallery.html" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
+            <a href="/gallery.html" data-home-image-slot="selected-3" class="group relative aspect-square overflow-hidden border-r border-[#ffffff26]">
                 <img src="/assets/images/optimized/street-quiet-corner-480.jpg"
                     srcset="/assets/images/optimized/street-quiet-corner-480.jpg 480w, /assets/images/optimized/street-quiet-corner-768.jpg 768w, /assets/images/optimized/street-quiet-corner-1200.jpg 1200w"
                     sizes="(min-width: 768px) 25vw, 50vw" width="1536" height="1024"
@@ -114,7 +114,7 @@
                 <span
                     class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">Street</span>
             </a>
-            <a href="/gallery.html" class="group relative aspect-square overflow-hidden">
+            <a href="/gallery.html" data-home-image-slot="selected-4" class="group relative aspect-square overflow-hidden">
                 <img src="/assets/images/optimized/landscape-open-light-480.jpg"
                     srcset="/assets/images/optimized/landscape-open-light-480.jpg 480w, /assets/images/optimized/landscape-open-light-768.jpg 768w, /assets/images/optimized/landscape-open-light-1200.jpg 1200w"
                     sizes="(min-width: 768px) 25vw, 50vw" width="1536" height="1024"
@@ -210,6 +210,7 @@
                 </a>
             </div>
             <a href="/gallery.html?filter=car"
+                data-home-image-slot="category-car"
                 class="group flex min-h-[360px] flex-col justify-between bg-[url('/assets/images/optimized/low-angle-automotive-768.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-[#ffffff26]">
                 <span class="text-5xl font-bold">CAR</span>
                 <span class="flex items-end justify-between text-5xl font-bold">
@@ -218,6 +219,7 @@
                 </span>
             </a>
             <a href="/gallery.html?filter=landscape"
+                data-home-image-slot="category-landscape"
                 class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/assets/images/optimized/landscape-open-light-768.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-r xl:border-t-0">
                 <span class="text-5xl font-bold">LANDSCAPE</span>
                 <span class="flex items-end justify-between text-5xl font-bold">
@@ -226,6 +228,7 @@
                 </span>
             </a>
             <a href="/gallery.html?filter=street"
+                data-home-image-slot="category-street"
                 class="group flex min-h-[360px] flex-col justify-between border-t border-[#ffffff26] bg-[url('/assets/images/optimized/street-quiet-corner-768.jpg')] bg-cover bg-center p-6 grayscale transition duration-300 hover:grayscale-0 sm:p-8 xl:border-t-0">
                 <span class="text-5xl font-bold">STREET</span>
                 <span class="flex items-end justify-between text-5xl font-bold">

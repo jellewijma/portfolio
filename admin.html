@@ -38,10 +38,15 @@
                         link</button>
                 </form>
 
-                <div id="admin-panel" class="hidden">
-                    <section class="border-b border-[#ffffff26] pb-10">
-                        <h2 class="text-3xl font-bold">Photo</h2>
-                        <form id="photo-form" class="mt-6 grid gap-4">
+                <div id="admin-panel" class="hidden space-y-12">
+                    <section class="border-b border-[#ffffff26] pb-12">
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <h2 class="text-3xl font-bold">Gallery photos</h2>
+                            <button type="button" id="photo-add"
+                                class="border border-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">Add
+                                image</button>
+                        </div>
+                        <form id="photo-form" class="mt-6 hidden gap-4 border border-[#ffffff26] p-4 sm:p-6">
                             <input type="hidden" id="photo-id">
                             <label class="block">
                                 <span class="text-sm uppercase tracking-[0.2em] text-[#ffffff99]">Title</span>
@@ -77,17 +82,56 @@
                             <div class="flex flex-wrap gap-3">
                                 <button type="submit"
                                     class="border border-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">Save
-                                    photo</button>
+                                    image</button>
                                 <button type="button" id="photo-reset"
-                                    class="border border-[#ffffff40] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc]">New</button>
+                                    class="border border-[#ffffff40] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc]">Cancel</button>
                             </div>
                         </form>
-                        <div id="photo-list" class="mt-8 grid gap-3"></div>
+                        <div id="photo-list" class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
                     </section>
 
-                    <section class="pt-10">
-                        <h2 class="text-3xl font-bold">Project</h2>
-                        <form id="project-form" class="mt-6 grid gap-4">
+                    <section class="border-b border-[#ffffff26] pb-12">
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <h2 class="text-3xl font-bold">Home page images</h2>
+                        </div>
+                        <form id="home-image-form" class="mt-6 hidden gap-4 border border-[#ffffff26] p-4 sm:p-6">
+                            <input type="hidden" id="home-image-slot">
+                            <div>
+                                <p id="home-image-label" class="text-sm uppercase tracking-[0.2em] text-[#ffffff99]">Home image</p>
+                                <h3 id="home-image-heading" class="mt-2 text-2xl font-semibold">Change image</h3>
+                            </div>
+                            <label class="block">
+                                <span class="text-sm uppercase tracking-[0.2em] text-[#ffffff99]">Title</span>
+                                <input id="home-image-title" required class="mt-2 w-full border border-[#ffffff40] bg-black px-4 py-3">
+                            </label>
+                            <label class="block">
+                                <span class="text-sm uppercase tracking-[0.2em] text-[#ffffff99]">Alt text</span>
+                                <input id="home-image-alt" required class="mt-2 w-full border border-[#ffffff40] bg-black px-4 py-3">
+                            </label>
+                            <label class="block">
+                                <span class="text-sm uppercase tracking-[0.2em] text-[#ffffff99]">Image</span>
+                                <input id="home-image-file" type="file" accept="image/*"
+                                    class="mt-2 w-full border border-[#ffffff40] bg-black px-4 py-3">
+                            </label>
+                            <div class="flex flex-wrap gap-3">
+                                <button type="submit"
+                                    class="border border-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">Save
+                                    image</button>
+                                <button type="button" id="home-image-reset"
+                                    class="border border-[#ffffff40] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc]">Cancel</button>
+                            </div>
+                        </form>
+                        <div id="home-image-list" class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+                    </section>
+
+                    <section>
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <h2 class="text-3xl font-bold">Projects</h2>
+                            <button type="button" id="project-add"
+                                class="border border-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">Add
+                                project</button>
+                        </div>
+                        <form id="project-form" class="mt-6 hidden gap-4 border border-[#ffffff26] p-4 sm:p-6">
                             <input type="hidden" id="project-id">
                             <label class="block">
                                 <span class="text-sm uppercase tracking-[0.2em] text-[#ffffff99]">Title</span>
@@ -132,10 +176,10 @@
                                     class="border border-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white">Save
                                     project</button>
                                 <button type="button" id="project-reset"
-                                    class="border border-[#ffffff40] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc]">New</button>
+                                    class="border border-[#ffffff40] px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc]">Cancel</button>
                             </div>
                         </form>
-                        <div id="project-list" class="mt-8 grid gap-3"></div>
+                        <div id="project-list" class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
                     </section>
                 </div>
             </div>
