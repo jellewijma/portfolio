@@ -376,10 +376,8 @@
         try {
             const slot = document.getElementById("home-image-slot").value;
             const storageId = await uploadFile(document.getElementById("home-image-file").files[0]);
-
-            if (!storageId && !(content.homeImages || []).some((item) => item.slot === slot)) {
-                throw new Error("Choose an image before saving this home page slot.");
-            }
+            const saved = (content.homeImages || []).find((item) => item.slot === slot);
+            const defaultSlot = homeImageSlots.find((item) => item.slot === slot);
 
             await api("/api/home-images", {
                 method: "POST",
@@ -388,6 +386,7 @@
                     title: document.getElementById("home-image-title").value,
                     alt: document.getElementById("home-image-alt").value,
                     storageId: storageId || undefined,
+                    imageUrl: !storageId && !saved ? defaultSlot.imageUrl : undefined,
                 }),
             });
             await loadContent();
