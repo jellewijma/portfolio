@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="/assets/icons/favicon.svg">
+    <meta name="description"
+        content="Photography gallery by Jelle Wijma, featuring automotive, street, and landscape images.">
+    <title>Jelle Wijma | Gallery</title>
+    <link rel="stylesheet" href="/assets/css/tailwind.generated.css">
+    <link rel="stylesheet" href="/assets/css/global.css">
+    <script src="/assets/js/runtime-config.js" defer></script>
+    <script src="/assets/js/main.js" defer></script>
+    <script defer src="https://cdn.vercel-insights.com/v1/script.js"></script>
+</head>
+
+<body class="bg-black text-white overflow-x-hidden scroll-hide">
+    <div id="page-shell">
+    <nav class="fixed inset-x-0 top-0 z-30 border-b border-[#ffffff26] bg-black/70 text-white backdrop-blur-lg">
+        <div class="flex h-[88px] items-center justify-between">
+            <a href="/index.html"
+                class="flex h-full w-1/2 items-center border-r border-[#ffffff26] px-6 text-base font-bold tracking-[0.08em] sm:px-12 xl:w-1/4">JelleWijma</a>
+            <button type="button" id="mobile-menu-button"
+                class="flex h-full w-[88px] items-center justify-center border-l border-[#ffffff26] xl:hidden"
+                aria-controls="site-menu" aria-expanded="false" aria-label="Open navigation">
+                <span class="sr-only">Open navigation</span>
+                <svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true">
+                    <path d="M12 21H60M12 36H60M12 51H60" stroke="white" stroke-width="7" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </button>
+            <div id="site-menu"
+                class="hidden absolute left-0 top-[88px] w-screen border-b border-[#ffffff26] bg-black/90 backdrop-blur-lg xl:static xl:flex xl:h-full xl:w-3/4 xl:border-b-0 xl:bg-transparent xl:backdrop-blur-0">
+                <a href="/index.html#projects"
+                    class="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r">Projects</a>
+                <a href="/index.html#about"
+                    class="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r">About</a>
+                <a href="/gallery.html"
+                    class="flex h-[72px] flex-1 items-center px-6 text-sm font-medium text-white transition hover:text-white sm:px-12 xl:h-full">Gallery</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-[88px]">
+        <header class="grid border-b border-[#ffffff26] xl:grid-cols-[1.1fr_0.9fr]">
+            <div class="p-6 sm:p-12 xl:border-r xl:border-[#ffffff26]">
+                <p class="text-sm uppercase tracking-[0.32em] text-[#ffffff80]">Selected photography</p>
+                <h1 class="mt-8 text-5xl font-bold leading-none sm:text-7xl">Gallery</h1>
+            </div>
+            <div class="flex flex-col justify-end border-t border-[#ffffff26] p-6 sm:p-12 xl:border-t-0">
+                <p class="max-w-xl text-lg leading-8 text-[#ffffffb3]">
+                    Automotive, street, and landscape images from the same visual world as the portfolio.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-3" aria-label="Gallery filters">
+                    <button type="button" data-filter="all"
+                        class="filter-button border px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition hover:border-white hover:text-white"
+                        aria-pressed="true">All</button>
+                    <button type="button" data-filter="car"
+                        class="filter-button border px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition hover:border-white hover:text-white"
+                        aria-pressed="false">Car</button>
+                    <button type="button" data-filter="landscape"
+                        class="filter-button border px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition hover:border-white hover:text-white"
+                        aria-pressed="false">Landscape</button>
+                    <button type="button" data-filter="street"
+                        class="filter-button border px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition hover:border-white hover:text-white"
+                        aria-pressed="false">Street</button>
+                </div>
+            </div>
+        </header>
+
+        <section id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" aria-label="Photography grid">
+            <button type="button" data-category="car" data-image="/assets/images/optimized/classic-car-warm-scene-1200.jpg"
+                data-srcset="/assets/images/optimized/classic-car-warm-scene-480.jpg 480w, /assets/images/optimized/classic-car-warm-scene-768.jpg 768w, /assets/images/optimized/classic-car-warm-scene-1200.jpg 1200w, /assets/images/optimized/classic-car-warm-scene-1600.jpg 1600w"
+                data-title="Vrolijke Drukte"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r">
+                <img src="/assets/images/optimized/classic-car-warm-scene-480.jpg"
+                    srcset="/assets/images/optimized/classic-car-warm-scene-480.jpg 480w, /assets/images/optimized/classic-car-warm-scene-768.jpg 768w, /assets/images/optimized/classic-car-warm-scene-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="2075" height="3130"
+                    alt="Classic car scene with warm color"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Vrolijke Drukte</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/assets/images/optimized/low-angle-automotive-1200.jpg"
+                data-srcset="/assets/images/optimized/low-angle-automotive-480.jpg 480w, /assets/images/optimized/low-angle-automotive-768.jpg 768w, /assets/images/optimized/low-angle-automotive-1200.jpg 1200w, /assets/images/optimized/low-angle-automotive-1600.jpg 1600w"
+                data-title="Stoer Chic"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left xl:border-r">
+                <img src="/assets/images/optimized/low-angle-automotive-480.jpg"
+                    srcset="/assets/images/optimized/low-angle-automotive-480.jpg 480w, /assets/images/optimized/low-angle-automotive-768.jpg 768w, /assets/images/optimized/low-angle-automotive-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="2075" height="3130"
+                    alt="Low angle automotive photograph"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Stoer Chic</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/assets/images/optimized/vintage-car-wood-detail-1200.jpg"
+                data-srcset="/assets/images/optimized/vintage-car-wood-detail-480.jpg 480w, /assets/images/optimized/vintage-car-wood-detail-768.jpg 768w, /assets/images/optimized/vintage-car-wood-detail-1200.jpg 1200w, /assets/images/optimized/vintage-car-wood-detail-1600.jpg 1600w"
+                data-title="Hout Oud"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r xl:border-r-0">
+                <img src="/assets/images/optimized/vintage-car-wood-detail-480.jpg"
+                    srcset="/assets/images/optimized/vintage-car-wood-detail-480.jpg 480w, /assets/images/optimized/vintage-car-wood-detail-768.jpg 768w, /assets/images/optimized/vintage-car-wood-detail-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="2075" height="3130"
+                    alt="Vintage automotive detail near wood textures"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Hout Oud</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/assets/images/optimized/automotive-architecture-1200.jpg"
+                data-srcset="/assets/images/optimized/automotive-architecture-480.jpg 480w, /assets/images/optimized/automotive-architecture-768.jpg 768w, /assets/images/optimized/automotive-architecture-1200.jpg 1200w, /assets/images/optimized/automotive-architecture-1600.jpg 1600w"
+                data-title="Helder Gebouw"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left xl:border-r">
+                <img src="/assets/images/optimized/automotive-architecture-480.jpg"
+                    srcset="/assets/images/optimized/automotive-architecture-480.jpg 480w, /assets/images/optimized/automotive-architecture-768.jpg 768w, /assets/images/optimized/automotive-architecture-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="2075" height="3130"
+                    alt="Automotive photograph near modern architecture"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Helder Gebouw</span>
+                </span>
+            </button>
+            <button type="button" data-category="car" data-image="/assets/images/optimized/automotive-chrome-detail-1200.jpg"
+                data-srcset="/assets/images/optimized/automotive-chrome-detail-480.jpg 480w, /assets/images/optimized/automotive-chrome-detail-768.jpg 768w, /assets/images/optimized/automotive-chrome-detail-1200.jpg 1200w, /assets/images/optimized/automotive-chrome-detail-1600.jpg 1600w"
+                data-title="Chrome Line"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r">
+                <img src="/assets/images/optimized/automotive-chrome-detail-480.jpg"
+                    srcset="/assets/images/optimized/automotive-chrome-detail-480.jpg 480w, /assets/images/optimized/automotive-chrome-detail-768.jpg 768w, /assets/images/optimized/automotive-chrome-detail-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="2075" height="3130"
+                    alt="Automotive chrome detail"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Car</span>
+                    <span class="mt-2 block text-2xl font-bold">Chrome Line</span>
+                </span>
+            </button>
+            <button type="button" data-category="street" data-image="/assets/images/optimized/street-passing-frame-1200.jpg"
+                data-srcset="/assets/images/optimized/street-passing-frame-480.jpg 480w, /assets/images/optimized/street-passing-frame-768.jpg 768w, /assets/images/optimized/street-passing-frame-1200.jpg 1200w"
+                data-title="Passing Frame"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left">
+                <img src="/assets/images/optimized/street-passing-frame-480.jpg"
+                    srcset="/assets/images/optimized/street-passing-frame-480.jpg 480w, /assets/images/optimized/street-passing-frame-768.jpg 768w, /assets/images/optimized/street-passing-frame-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="1536" height="1024"
+                    alt="Street photograph captured on film"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Street</span>
+                    <span class="mt-2 block text-2xl font-bold">Passing Frame</span>
+                </span>
+            </button>
+            <button type="button" data-category="street" data-image="/assets/images/optimized/street-quiet-corner-1200.jpg"
+                data-srcset="/assets/images/optimized/street-quiet-corner-480.jpg 480w, /assets/images/optimized/street-quiet-corner-768.jpg 768w, /assets/images/optimized/street-quiet-corner-1200.jpg 1200w"
+                data-title="Quiet Corner"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r xl:border-r">
+                <img src="/assets/images/optimized/street-quiet-corner-480.jpg"
+                    srcset="/assets/images/optimized/street-quiet-corner-480.jpg 480w, /assets/images/optimized/street-quiet-corner-768.jpg 768w, /assets/images/optimized/street-quiet-corner-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="1536" height="1024"
+                    alt="Moody street scene"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Street</span>
+                    <span class="mt-2 block text-2xl font-bold">Quiet Corner</span>
+                </span>
+            </button>
+            <button type="button" data-category="landscape" data-image="/assets/images/optimized/landscape-open-light-1200.jpg"
+                data-srcset="/assets/images/optimized/landscape-open-light-480.jpg 480w, /assets/images/optimized/landscape-open-light-768.jpg 768w, /assets/images/optimized/landscape-open-light-1200.jpg 1200w"
+                data-title="Open Light"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left">
+                <img src="/assets/images/optimized/landscape-open-light-480.jpg"
+                    srcset="/assets/images/optimized/landscape-open-light-480.jpg 480w, /assets/images/optimized/landscape-open-light-768.jpg 768w, /assets/images/optimized/landscape-open-light-1200.jpg 1200w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="1536" height="1024"
+                    alt="High contrast landscape image"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Landscape</span>
+                    <span class="mt-2 block text-2xl font-bold">Open Light</span>
+                </span>
+            </button>
+            <button type="button" data-category="landscape" data-image="/assets/images/optimized/landscape-last-ridge-768.jpg"
+                data-srcset="/assets/images/optimized/landscape-last-ridge-480.jpg 480w, /assets/images/optimized/landscape-last-ridge-768.jpg 768w"
+                data-title="Last Ridge"
+                class="gallery-item group relative aspect-square overflow-hidden border-b border-[#ffffff26] text-left sm:border-r xl:border-r-0">
+                <img src="/assets/images/optimized/landscape-last-ridge-480.jpg"
+                    srcset="/assets/images/optimized/landscape-last-ridge-480.jpg 480w, /assets/images/optimized/landscape-last-ridge-768.jpg 768w"
+                    sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw" width="1024" height="1536"
+                    alt="Landscape photograph with a distant ridge"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" decoding="async">
+                <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-5">
+                    <span class="block text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Landscape</span>
+                    <span class="mt-2 block text-2xl font-bold">Last Ridge</span>
+                </span>
+            </button>
+        </section>
+    </main>
+    </div>
+
+    <div id="lightbox" class="fixed inset-0 z-40 hidden bg-black/90 backdrop-blur-sm" role="dialog" aria-modal="true"
+        aria-labelledby="lightbox-title">
+        <button type="button" id="lightbox-close"
+            class="absolute right-0 top-0 z-10 flex h-[88px] w-[88px] items-center justify-center border-b border-l border-[#ffffff26] text-3xl leading-none"
+            aria-label="Close image">&times;</button>
+        <div class="flex min-h-screen flex-col justify-center p-4 sm:p-10">
+            <img id="lightbox-image" src="/assets/images/optimized/classic-car-warm-scene-1200.jpg" alt="" width="2075" height="3130"
+                class="max-h-[78vh] w-full object-contain">
+            <div class="mx-auto mt-6 flex w-full max-w-5xl items-center justify-between border-t border-[#ffffff26] pt-4">
+                <h2 id="lightbox-title" class="text-2xl font-bold">Image title</h2>
+                <p id="lightbox-category" class="text-sm uppercase tracking-[0.24em] text-[#ffffff99]">Category</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
