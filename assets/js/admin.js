@@ -1,6 +1,5 @@
 (function () {
     const apiBase = (window.PORTFOLIO_API_BASE || "").replace(/\/$/, "");
-    const tokenKey = "portfolioAdminToken";
     let content = { photos: [], projects: [] };
 
     const status = document.getElementById("admin-status");
@@ -66,10 +65,6 @@
         },
     ];
 
-    function token() {
-        return localStorage.getItem(tokenKey);
-    }
-
     function setStatus(message) {
         status.textContent = message;
     }
@@ -85,7 +80,6 @@
     async function api(path, options) {
         const headers = {
             ...(options && options.body ? { "Content-Type": "application/json" } : {}),
-            ...(token() ? { Authorization: "Bearer " + token() } : {}),
             ...(options && options.headers ? options.headers : {}),
         };
 
@@ -98,6 +92,7 @@
         const response = await fetch(apiBase + path, {
             ...options,
             headers,
+            credentials: "include",
         });
         const data = await response.json().catch(() => ({}));
 
@@ -290,11 +285,10 @@
         }
 
         setStatus("Verifying sign-in link...");
-        const session = await api("/api/login/verify", {
+        await api("/api/login/verify", {
             method: "POST",
             body: JSON.stringify({ token: magicToken }),
         });
-        localStorage.setItem(tokenKey, session.token);
         window.history.replaceState({}, document.title, window.location.pathname);
         showAdmin();
         await loadContent();
@@ -321,7 +315,6 @@
         } catch {
             // The local token should be cleared even if the remote session is already gone.
         }
-        localStorage.removeItem(tokenKey);
         showLogin();
         setStatus("Signed out.");
     });
@@ -407,7 +400,7 @@
                     id: document.getElementById("project-id").value || undefined,
                     title: document.getElementById("project-title").value,
                     description: document.getElementById("project-description").value,
-                    url: document.getElementById("project-url").value,
+                    url: new URL(document.getElementById("project-url").value).toString(),
                     imageStorageId: imageStorageId || undefined,
                     imageAlt: document.getElementById("project-image-alt").value,
                     featured: document.getElementById("project-featured").checked,
@@ -428,20 +421,18 @@
 
     verifyMagicLink()
         .then(function (handled) {
-            if (handled || !token()) {
+            if (handled) {
                 return;
             }
 
             showAdmin();
             return loadContent().catch(function () {
-                localStorage.removeItem(tokenKey);
-                showLogin();
+                        showLogin();
                 setStatus("Session expired. Sign in again.");
             });
         })
         .catch(function (error) {
-            localStorage.removeItem(tokenKey);
-            window.history.replaceState({}, document.title, window.location.pathname);
+                window.history.replaceState({}, document.title, window.location.pathname);
             showLogin();
             setStatus(error.message);
         });

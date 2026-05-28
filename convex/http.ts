@@ -3,24 +3,44 @@ import { httpActionGeneric } from "convex/server";
 
 const http = httpRouter();
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
+const corsHeadersBase = {
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-function json(data: unknown, status = 200) {
+function allowedOrigin(origin: string | null) {
+    const configured = (process.env.ALLOWED_ORIGINS || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+
+    if (!origin) {
+        return configured[0] || null;
+    }
+
+    return configured.includes(origin) ? origin : null;
+}
+
+function responseHeaders(origin: string | null) {
+    const allowOrigin = allowedOrigin(origin);
+    return {
+        ...corsHeadersBase,
+        ...(allowOrigin ? { "Access-Control-Allow-Origin": allowOrigin, Vary: "Origin" } : {}),
+    };
+}
+
+function json(data: unknown, status = 200, origin: string | null = null) {
     return new Response(JSON.stringify(data), {
         status,
         headers: {
-            ...corsHeaders,
+            ...responseHeaders(origin),
             "Content-Type": "application/json",
         },
     });
 }
 
-function errorResponse(error: unknown, status = 400) {
-    return json({ error: error instanceof Error ? error.message : "Request failed." }, status);
+function errorResponse(error: unknown, status = 400, origin: string | null = null) {
+    return json({ error: error instanceof Error ? error.message : "Request failed." }, status, origin);
 }
 
 async function readJson(request: Request) {
@@ -31,14 +51,49 @@ async function readJson(request: Request) {
     return await request.json();
 }
 
-function tokenFromRequest(request: Request) {
-    const header = request.headers.get("authorization") || "";
+function parseCookieHeader(cookieHeader: string | null) {
+    return Object.fromEntries(
+        (cookieHeader || "")
+            .split(";")
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .map((part) => {
+                const index = part.indexOf("=");
+                if (index < 0) {
+                    return [part, ""];
+                }
 
-    if (!header.startsWith("Bearer ")) {
-        throw new Error("Missing Authorization bearer token.");
+                return [part.slice(0, index), decodeURIComponent(part.slice(index + 1))];
+            }),
+    );
+}
+
+function tokenFromRequest(request: Request) {
+    const cookies = parseCookieHeader(request.headers.get("cookie"));
+    const cookieToken = cookies.portfolioAdminToken;
+
+    if (cookieToken) {
+        return cookieToken;
     }
 
-    return header.slice("Bearer ".length);
+    const header = request.headers.get("authorization") || "";
+    if (header.startsWith("Bearer ")) {
+        return header.slice("Bearer ".length);
+    }
+
+    throw new Error("Missing authentication token.");
+}
+
+function authCookie(token: string) {
+    const isProd = process.env.NODE_ENV === "production";
+    const secure = isProd ? "; Secure" : "";
+    return `portfolioAdminToken=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Strict${secure}; Max-Age=${60 * 60 * 8}`;
+}
+
+function clearAuthCookie() {
+    const isProd = process.env.NODE_ENV === "production";
+    const secure = isProd ? "; Secure" : "";
+    return `portfolioAdminToken=; Path=/; HttpOnly; SameSite=Strict${secure}; Max-Age=0`;
 }
 
 function requiredEnv(name: string) {
@@ -136,7 +191,7 @@ async function sendMagicLinkEmail(email: string, link: string) {
     }
 }
 
-const optionsHandler = httpActionGeneric(async () => new Response(null, { status: 204, headers: corsHeaders }));
+const optionsHandler = httpActionGeneric(async (_ctx, request) => new Response(null, { status: 204, headers: responseHeaders(request.headers.get("origin")) }));
 
 for (const path of [
     "/api/content",
@@ -157,9 +212,9 @@ for (const path of [
 http.route({
     path: "/api/content",
     method: "GET",
-    handler: httpActionGeneric(async (ctx) => {
+    handler: httpActionGeneric(async (ctx, request) => {
         const content = await ctx.runQuery(anyApi.content.listPublicContent, {});
-        return json(content);
+        return json(content, 200, request.headers.get("origin"));
     }),
 });
 
@@ -171,9 +226,9 @@ http.route({
             const content = await ctx.runQuery(anyApi.content.listAdminContent, {
                 token: tokenFromRequest(request),
             });
-            return json(content);
+            return json(content, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error, 401);
+            return errorResponse(error, 401, request.headers.get("origin"));
         }
     }),
 });
@@ -190,9 +245,9 @@ http.route({
                 await sendMagicLinkEmail(result.email, magicLinkUrl(result.token));
             }
 
-            return json({ ok: true });
+            return json({ ok: true }, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error, 400);
+            return errorResponse(error, 400, request.headers.get("origin"));
         }
     }),
 });
@@ -204,9 +259,11 @@ http.route({
         try {
             const body = await readJson(request);
             const session = await ctx.runMutation(anyApi.content.verifyMagicLink, { token: body.token || "" });
-            return json(session);
+            const response = json({ ok: true }, 200, request.headers.get("origin"));
+            response.headers.append("Set-Cookie", authCookie(session.token));
+            return response;
         } catch (error) {
-            return errorResponse(error, 401);
+            return errorResponse(error, 401, request.headers.get("origin"));
         }
     }),
 });
@@ -217,9 +274,11 @@ http.route({
     handler: httpActionGeneric(async (ctx, request) => {
         try {
             const result = await ctx.runMutation(anyApi.content.logout, { token: tokenFromRequest(request) });
-            return json(result);
+            const response = json(result, 200, request.headers.get("origin"));
+            response.headers.append("Set-Cookie", clearAuthCookie());
+            return response;
         } catch (error) {
-            return errorResponse(error, 401);
+            return errorResponse(error, 401, request.headers.get("origin"));
         }
     }),
 });
@@ -232,9 +291,9 @@ http.route({
             const uploadUrl = await ctx.runMutation(anyApi.content.createUploadUrl, {
                 token: tokenFromRequest(request),
             });
-            return json({ uploadUrl });
+            return json({ uploadUrl }, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error, 401);
+            return errorResponse(error, 401, request.headers.get("origin"));
         }
     }),
 });
@@ -249,9 +308,9 @@ http.route({
                 ...body,
                 token: tokenFromRequest(request),
             });
-            return json(result);
+            return json(result, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error);
+            return errorResponse(error, 400, request.headers.get("origin"));
         }
     }),
 });
@@ -266,9 +325,9 @@ http.route({
                 id: body.id,
                 token: tokenFromRequest(request),
             });
-            return json(result);
+            return json(result, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error);
+            return errorResponse(error, 400, request.headers.get("origin"));
         }
     }),
 });
@@ -283,9 +342,9 @@ http.route({
                 ...body,
                 token: tokenFromRequest(request),
             });
-            return json(result);
+            return json(result, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error);
+            return errorResponse(error, 400, request.headers.get("origin"));
         }
     }),
 });
@@ -300,9 +359,9 @@ http.route({
                 ...body,
                 token: tokenFromRequest(request),
             });
-            return json(result);
+            return json(result, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error);
+            return errorResponse(error, 400, request.headers.get("origin"));
         }
     }),
 });
@@ -317,9 +376,9 @@ http.route({
                 id: body.id,
                 token: tokenFromRequest(request),
             });
-            return json(result);
+            return json(result, 200, request.headers.get("origin"));
         } catch (error) {
-            return errorResponse(error);
+            return errorResponse(error, 400, request.headers.get("origin"));
         }
     }),
 });
