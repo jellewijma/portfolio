@@ -1,6 +1,6 @@
 # Jelle Wijma Portfolio
 
-Static portfolio and photography gallery built with plain HTML, Tailwind CSS, and Convex for editable photos/projects.
+Next.js portfolio and photography gallery with Tailwind CSS and Convex for editable photos/projects.
 
 ## Setup
 
@@ -29,7 +29,7 @@ scripts/               Local build and validation utilities
 npm run dev:css
 ```
 
-Open `index.html` or serve the folder with a static file server.
+Run `npm run dev` and open `http://localhost:3000`.
 
 ## Build
 
