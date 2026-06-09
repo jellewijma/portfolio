@@ -108,7 +108,7 @@ function requiredEnv(name: string) {
 
 function magicLinkUrl(token: string) {
     const siteUrl = requiredEnv("ADMIN_SITE_URL").replace(/\/$/, "");
-    return `${siteUrl}/admin.html?token=${encodeURIComponent(token)}`;
+    return `${siteUrl}/admin?token=${encodeURIComponent(token)}`;
 }
 
 function magicLinkEmailHtml(link: string) {

@@ -1,26 +1,42 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
-const files = ["index.html", "gallery.html", "admin.html"];
+const entries = ["app", "assets/js", "index.html", "gallery.html", "admin.html"];
+const supportedExtensions = new Set([".html", ".js", ".jsx", ".ts", ".tsx"]);
 const refs = new Set();
-const assetPattern = /(?:src|href|data-image)="([^"]+)"|srcset="([^"]+)"|data-srcset="([^"]+)"|url\('([^']+)'\)/g;
+const assetPattern = /\/assets\/[^\s"'`)<]+/g;
 
-for (const file of files) {
-    const html = readFileSync(file, "utf8");
+function extensionFor(file) {
+    const index = file.lastIndexOf(".");
+    return index >= 0 ? file.slice(index) : "";
+}
 
-    for (const match of html.matchAll(assetPattern)) {
-        const value = match[1] || match[2] || match[3] || match[4];
+function collectFiles(entry) {
+    const stat = statSync(entry);
 
-        for (const srcsetPart of value.split(",")) {
-            const ref = srcsetPart.trim().split(/\s+/)[0];
+    if (stat.isFile()) {
+        return supportedExtensions.has(extensionFor(entry)) ? [entry] : [];
+    }
 
-            if (ref.startsWith("/") && !ref.startsWith("/index.html") && !ref.startsWith("/gallery.html")) {
-                refs.add(ref.slice(1));
-            }
-        }
+    if (!stat.isDirectory()) {
+        return [];
+    }
+
+    return readdirSync(entry)
+        .flatMap((child) => collectFiles(join(entry, child)));
+}
+
+for (const file of entries.flatMap(collectFiles)) {
+    const source = readFileSync(file, "utf8");
+
+    for (const match of source.matchAll(assetPattern)) {
+        refs.add(match[0].replace(/[,\]]$/, ""));
     }
 }
 
-const missingRefs = Array.from(refs).filter((ref) => !existsSync(ref));
+const missingRefs = Array.from(refs)
+    .sort()
+    .filter((ref) => !existsSync(ref.slice(1)));
 
 if (missingRefs.length > 0) {
     console.error(`Missing assets:\n${missingRefs.join("\n")}`);

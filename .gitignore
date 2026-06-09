@@ -11,6 +11,8 @@ yarn-error.log*
 
 # Runtime files
 .DS_Store
+.next/
+public/assets/
 
 # Environment files
 .env
@@ -22,3 +24,5 @@ yarn-error.log*
 
 # Local screenshots
 screenshots/
+.vercel
+.env*

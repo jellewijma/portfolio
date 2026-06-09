@@ -13,6 +13,25 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/index.html",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/gallery.html",
+        destination: "/gallery",
+        permanent: true,
+      },
+      {
+        source: "/admin.html",
+        destination: "/admin",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
