@@ -1,6 +1,4 @@
 
-.env.local
-
 # Node dependencies
 node_modules/
 
@@ -12,6 +10,7 @@ yarn-error.log*
 # Runtime files
 .DS_Store
 .next/
+.vercel/
 public/assets/
 
 # Environment files
@@ -24,5 +23,3 @@ public/assets/
 
 # Local screenshots
 screenshots/
-.vercel
-.env*

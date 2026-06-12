@@ -1,12 +1,15 @@
 import { anyApi, httpRouter } from "convex/server";
 import { httpActionGeneric } from "convex/server";
+import { del, put } from "@vercel/blob";
 
 const http = httpRouter();
 
 const corsHeadersBase = {
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-File-Name",
 };
+
+const maxUploadBytes = 15 * 1024 * 1024;
 
 function allowedOrigin(origin: string | null) {
     const configured = (process.env.ALLOWED_ORIGINS || "")
@@ -106,6 +109,88 @@ function requiredEnv(name: string) {
     return value;
 }
 
+function decodeHeaderValue(value: string) {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
+}
+
+function safeFileName(value: string | null) {
+    const decoded = decodeHeaderValue(value || "upload");
+    const normalized = decoded
+        .trim()
+        .replace(/[/\\?%*:|"<>]/g, "-")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+
+    return normalized || "upload";
+}
+
+function isVercelBlobUrl(value: unknown) {
+    if (typeof value !== "string" || !value) {
+        return false;
+    }
+
+    try {
+        const url = new URL(value);
+        return url.protocol === "https:" && (url.hostname === "blob.vercel-storage.com" || url.hostname.endsWith(".blob.vercel-storage.com"));
+    } catch {
+        return false;
+    }
+}
+
+async function deleteBlobUrls(urls: unknown) {
+    if (!Array.isArray(urls)) {
+        return;
+    }
+
+    const blobUrls = urls.filter(isVercelBlobUrl);
+    if (blobUrls.length === 0) {
+        return;
+    }
+
+    try {
+        await del(blobUrls);
+    } catch (error) {
+        console.warn("Failed to delete replaced Vercel Blob asset.", error);
+    }
+}
+
+async function uploadBlob(request: Request) {
+    const contentType = request.headers.get("content-type") || "application/octet-stream";
+
+    if (!contentType.startsWith("image/")) {
+        throw new Error("Only image uploads are allowed.");
+    }
+
+    const body = await request.arrayBuffer();
+    if (body.byteLength === 0) {
+        throw new Error("Upload is empty.");
+    }
+
+    if (body.byteLength > maxUploadBytes) {
+        throw new Error("Upload is larger than 15 MB.");
+    }
+
+    const fileName = safeFileName(request.headers.get("x-file-name"));
+    const blob = await put(`portfolio/${Date.now()}-${fileName}`, body, {
+        access: "public",
+        addRandomSuffix: true,
+        contentType,
+    });
+
+    return {
+        imageUrl: blob.url,
+        url: blob.url,
+        pathname: blob.pathname,
+        contentType: blob.contentType,
+        size: body.byteLength,
+    };
+}
+
 function magicLinkUrl(token: string) {
     const siteUrl = requiredEnv("ADMIN_SITE_URL").replace(/\/$/, "");
     return `${siteUrl}/admin?token=${encodeURIComponent(token)}`;
@@ -199,7 +284,7 @@ for (const path of [
     "/api/login",
     "/api/login/verify",
     "/api/logout",
-    "/api/upload-url",
+    "/api/upload",
     "/api/photos",
     "/api/photos/delete",
     "/api/home-images",
@@ -284,14 +369,16 @@ http.route({
 });
 
 http.route({
-    path: "/api/upload-url",
+    path: "/api/upload",
     method: "POST",
     handler: httpActionGeneric(async (ctx, request) => {
         try {
-            const uploadUrl = await ctx.runMutation(anyApi.content.createUploadUrl, {
-                token: tokenFromRequest(request),
-            });
-            return json({ uploadUrl }, 200, request.headers.get("origin"));
+            const valid = await ctx.runQuery(anyApi.content.validateSession, { token: tokenFromRequest(request) });
+            if (!valid) {
+                throw new Error("Unauthorized");
+            }
+
+            return json(await uploadBlob(request), 200, request.headers.get("origin"));
         } catch (error) {
             return errorResponse(error, 401, request.headers.get("origin"));
         }
@@ -304,10 +391,11 @@ http.route({
     handler: httpActionGeneric(async (ctx, request) => {
         try {
             const body = await readJson(request);
-            const result = await ctx.runMutation(anyApi.content.savePhoto, {
+            const result: any = await ctx.runMutation(anyApi.content.savePhoto, {
                 ...body,
                 token: tokenFromRequest(request),
             });
+            await deleteBlobUrls(result.removedImageUrls);
             return json(result, 200, request.headers.get("origin"));
         } catch (error) {
             return errorResponse(error, 400, request.headers.get("origin"));
@@ -321,10 +409,11 @@ http.route({
     handler: httpActionGeneric(async (ctx, request) => {
         try {
             const body = await readJson(request);
-            const result = await ctx.runMutation(anyApi.content.deletePhoto, {
+            const result: any = await ctx.runMutation(anyApi.content.deletePhoto, {
                 id: body.id,
                 token: tokenFromRequest(request),
             });
+            await deleteBlobUrls(result.removedImageUrls);
             return json(result, 200, request.headers.get("origin"));
         } catch (error) {
             return errorResponse(error, 400, request.headers.get("origin"));
@@ -338,10 +427,11 @@ http.route({
     handler: httpActionGeneric(async (ctx, request) => {
         try {
             const body = await readJson(request);
-            const result = await ctx.runMutation(anyApi.content.saveHomeImage, {
+            const result: any = await ctx.runMutation(anyApi.content.saveHomeImage, {
                 ...body,
                 token: tokenFromRequest(request),
             });
+            await deleteBlobUrls(result.removedImageUrls);
             return json(result, 200, request.headers.get("origin"));
         } catch (error) {
             return errorResponse(error, 400, request.headers.get("origin"));
@@ -355,10 +445,11 @@ http.route({
     handler: httpActionGeneric(async (ctx, request) => {
         try {
             const body = await readJson(request);
-            const result = await ctx.runMutation(anyApi.content.saveProject, {
+            const result: any = await ctx.runMutation(anyApi.content.saveProject, {
                 ...body,
                 token: tokenFromRequest(request),
             });
+            await deleteBlobUrls(result.removedImageUrls);
             return json(result, 200, request.headers.get("origin"));
         } catch (error) {
             return errorResponse(error, 400, request.headers.get("origin"));
@@ -372,10 +463,11 @@ http.route({
     handler: httpActionGeneric(async (ctx, request) => {
         try {
             const body = await readJson(request);
-            const result = await ctx.runMutation(anyApi.content.deleteProject, {
+            const result: any = await ctx.runMutation(anyApi.content.deleteProject, {
                 id: body.id,
                 token: tokenFromRequest(request),
             });
+            await deleteBlobUrls(result.removedImageUrls);
             return json(result, 200, request.headers.get("origin"));
         } catch (error) {
             return errorResponse(error, 400, request.headers.get("origin"));

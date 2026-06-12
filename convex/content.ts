@@ -221,15 +221,6 @@ export const listAdminContent = queryGeneric({
     },
 });
 
-export const createUploadUrl = mutationGeneric({
-    args: { token: v.string() },
-    handler: async (ctx, args) => {
-        await requireSession(ctx, args.token);
-
-        return await ctx.storage.generateUploadUrl();
-    },
-});
-
 export const savePhoto = mutationGeneric({
     args: {
         token: v.string(),
@@ -245,6 +236,7 @@ export const savePhoto = mutationGeneric({
     handler: async (ctx, args) => {
         await requireSession(ctx, args.token);
 
+        const existing = args.id ? await ctx.db.get(args.id) : null;
         const now = Date.now();
         const fields: any = {
             title: args.title,
@@ -256,15 +248,31 @@ export const savePhoto = mutationGeneric({
         };
 
         if (args.storageId) fields.storageId = args.storageId;
-        if (args.imageUrl) fields.imageUrl = args.imageUrl;
+        if (args.imageUrl) {
+            fields.imageUrl = args.imageUrl;
+            fields.storageId = undefined;
+        }
 
         if (args.id) {
+            if (!existing) {
+                throw new Error("Photo not found.");
+            }
+
+            if (args.imageUrl && existing.storageId) {
+                await ctx.storage.delete(existing.storageId);
+            } else if (args.storageId && existing.storageId && existing.storageId !== args.storageId) {
+                await ctx.storage.delete(existing.storageId);
+            }
+
             await ctx.db.patch(args.id, fields);
-            return { id: args.id };
+            return {
+                id: args.id,
+                removedImageUrls: args.imageUrl && existing.imageUrl && existing.imageUrl !== args.imageUrl ? [existing.imageUrl] : [],
+            };
         }
 
         const id = await ctx.db.insert("photos", { ...fields, createdAt: now });
-        return { id };
+        return { id, removedImageUrls: [] };
     },
 });
 
@@ -274,12 +282,16 @@ export const deletePhoto = mutationGeneric({
         await requireSession(ctx, args.token);
         const photo = await ctx.db.get(args.id);
 
+        if (!photo) {
+            return { ok: true, removedImageUrls: [] };
+        }
+
         if (photo?.storageId) {
             await ctx.storage.delete(photo.storageId);
         }
 
         await ctx.db.delete(args.id);
-        return { ok: true };
+        return { ok: true, removedImageUrls: photo.imageUrl ? [photo.imageUrl] : [] };
     },
 });
 
@@ -307,19 +319,27 @@ export const saveHomeImage = mutationGeneric({
         };
 
         if (args.storageId) fields.storageId = args.storageId;
-        if (args.imageUrl) fields.imageUrl = args.imageUrl;
+        if (args.imageUrl) {
+            fields.imageUrl = args.imageUrl;
+            fields.storageId = undefined;
+        }
 
         if (existing) {
-            if (args.storageId && existing.storageId && existing.storageId !== args.storageId) {
+            if (args.imageUrl && existing.storageId) {
+                await ctx.storage.delete(existing.storageId);
+            } else if (args.storageId && existing.storageId && existing.storageId !== args.storageId) {
                 await ctx.storage.delete(existing.storageId);
             }
 
             await ctx.db.patch(existing._id, fields);
-            return { id: existing._id };
+            return {
+                id: existing._id,
+                removedImageUrls: args.imageUrl && existing.imageUrl && existing.imageUrl !== args.imageUrl ? [existing.imageUrl] : [],
+            };
         }
 
         const id = await ctx.db.insert("homeImages", fields);
-        return { id };
+        return { id, removedImageUrls: [] };
     },
 });
 
@@ -340,6 +360,7 @@ export const saveProject = mutationGeneric({
     handler: async (ctx, args) => {
         await requireSession(ctx, args.token);
 
+        const existing = args.id ? await ctx.db.get(args.id) : null;
         const now = Date.now();
         const fields: any = {
             title: args.title,
@@ -353,15 +374,31 @@ export const saveProject = mutationGeneric({
         };
 
         if (args.imageStorageId) fields.imageStorageId = args.imageStorageId;
-        if (args.imageUrl) fields.imageUrl = args.imageUrl;
+        if (args.imageUrl) {
+            fields.imageUrl = args.imageUrl;
+            fields.imageStorageId = undefined;
+        }
 
         if (args.id) {
+            if (!existing) {
+                throw new Error("Project not found.");
+            }
+
+            if (args.imageUrl && existing.imageStorageId) {
+                await ctx.storage.delete(existing.imageStorageId);
+            } else if (args.imageStorageId && existing.imageStorageId && existing.imageStorageId !== args.imageStorageId) {
+                await ctx.storage.delete(existing.imageStorageId);
+            }
+
             await ctx.db.patch(args.id, fields);
-            return { id: args.id };
+            return {
+                id: args.id,
+                removedImageUrls: args.imageUrl && existing.imageUrl && existing.imageUrl !== args.imageUrl ? [existing.imageUrl] : [],
+            };
         }
 
         const id = await ctx.db.insert("projects", { ...fields, createdAt: now });
-        return { id };
+        return { id, removedImageUrls: [] };
     },
 });
 
@@ -371,11 +408,15 @@ export const deleteProject = mutationGeneric({
         await requireSession(ctx, args.token);
         const project = await ctx.db.get(args.id);
 
+        if (!project) {
+            return { ok: true, removedImageUrls: [] };
+        }
+
         if (project?.imageStorageId) {
             await ctx.storage.delete(project.imageStorageId);
         }
 
         await ctx.db.delete(args.id);
-        return { ok: true };
+        return { ok: true, removedImageUrls: project.imageUrl ? [project.imageUrl] : [] };
     },
 });

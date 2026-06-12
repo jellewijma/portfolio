@@ -106,19 +106,22 @@
     async function uploadFile(file) {
         if (!file) return null;
 
-        const { uploadUrl } = await api("/api/upload-url", { method: "POST", body: "{}" });
-        const response = await fetch(uploadUrl, {
+        const response = await fetch(apiBase + "/api/upload", {
             method: "POST",
-            headers: { "Content-Type": file.type },
+            headers: {
+                "Content-Type": file.type || "application/octet-stream",
+                "X-File-Name": encodeURIComponent(file.name || "upload"),
+            },
             body: file,
+            credentials: "include",
         });
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            throw new Error("Upload failed.");
+            throw new Error(data.error || "Upload failed.");
         }
 
-        return data.storageId;
+        return data.imageUrl;
     }
 
     function showAdmin() {
@@ -343,7 +346,7 @@
         setStatus("Saving photo...");
 
         try {
-            const storageId = await uploadFile(document.getElementById("photo-file").files[0]);
+            const imageUrl = await uploadFile(document.getElementById("photo-file").files[0]);
             await api("/api/photos", {
                 method: "POST",
                 body: JSON.stringify({
@@ -351,7 +354,7 @@
                     title: document.getElementById("photo-title").value,
                     alt: document.getElementById("photo-alt").value,
                     category: document.getElementById("photo-category").value,
-                    storageId: storageId || undefined,
+                    imageUrl: imageUrl || undefined,
                     order: Number(document.getElementById("photo-order").value),
                     published: document.getElementById("photo-published").checked,
                 }),
@@ -368,7 +371,7 @@
 
         try {
             const slot = document.getElementById("home-image-slot").value;
-            const storageId = await uploadFile(document.getElementById("home-image-file").files[0]);
+            const imageUrl = await uploadFile(document.getElementById("home-image-file").files[0]);
             const saved = (content.homeImages || []).find((item) => item.slot === slot);
             const defaultSlot = homeImageSlots.find((item) => item.slot === slot);
 
@@ -378,8 +381,7 @@
                     slot,
                     title: document.getElementById("home-image-title").value,
                     alt: document.getElementById("home-image-alt").value,
-                    storageId: storageId || undefined,
-                    imageUrl: !storageId && !saved ? defaultSlot.imageUrl : undefined,
+                    imageUrl: imageUrl || (!saved ? defaultSlot.imageUrl : undefined),
                 }),
             });
             await loadContent();
@@ -393,7 +395,7 @@
         setStatus("Saving project...");
 
         try {
-            const imageStorageId = await uploadFile(document.getElementById("project-file").files[0]);
+            const imageUrl = await uploadFile(document.getElementById("project-file").files[0]);
             await api("/api/projects", {
                 method: "POST",
                 body: JSON.stringify({
@@ -401,7 +403,7 @@
                     title: document.getElementById("project-title").value,
                     description: document.getElementById("project-description").value,
                     url: new URL(document.getElementById("project-url").value).toString(),
-                    imageStorageId: imageStorageId || undefined,
+                    imageUrl: imageUrl || undefined,
                     imageAlt: document.getElementById("project-image-alt").value,
                     featured: document.getElementById("project-featured").checked,
                     order: Number(document.getElementById("project-order").value),
