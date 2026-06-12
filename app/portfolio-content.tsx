@@ -1,6 +1,6 @@
 import Script from "next/script";
 
-type NavPage = "home" | "gallery";
+type NavPage = "home" | "projects" | "about" | "gallery";
 
 type GalleryPhoto = {
   title: string;
@@ -184,15 +184,19 @@ export function PublicScripts() {
 
 export function SiteNav({ page }: { page: NavPage }) {
   const homeHref = "/";
-  const projectsHref = page === "home" ? "#projects" : "/#projects";
-  const aboutHref = page === "home" ? "#about" : "/#about";
+  const navLinkClass = (target: NavPage, withDivider = true) =>
+    [
+      "flex h-[72px] flex-1 items-center px-6 text-sm font-medium transition hover:bg-white/[0.06] hover:text-white sm:px-12 xl:h-full xl:border-b-0",
+      withDivider ? "border-b border-[#ffffff26] xl:border-r" : "",
+      page === target ? "bg-white/[0.08] text-white" : "text-white/75",
+    ].join(" ");
 
   return (
     <nav className="fixed inset-x-0 top-0 z-30 border-b border-[#ffffff26] bg-black/70 text-white backdrop-blur-lg">
       <div className="flex h-[88px] items-center justify-between">
         <a
           href={homeHref}
-          className="flex h-full w-1/2 items-center border-r border-[#ffffff26] px-6 text-base font-bold tracking-[0.08em] sm:px-12 xl:w-1/4"
+          className="flex h-full w-1/2 items-center border-r border-[#ffffff26] px-6 text-base font-bold tracking-[0.08em] text-white transition hover:bg-white/[0.06] sm:px-12 xl:w-1/4"
         >
           JelleWijma
         </a>
@@ -214,22 +218,20 @@ export function SiteNav({ page }: { page: NavPage }) {
           className="hidden absolute left-0 top-[88px] w-screen border-b border-[#ffffff26] bg-black/90 backdrop-blur-lg xl:static xl:flex xl:h-full xl:w-3/4 xl:border-b-0 xl:bg-transparent xl:backdrop-blur-0"
         >
           <a
-            href={projectsHref}
-            className="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r"
+            href="/projects"
+            className={navLinkClass("projects")}
           >
             Projects
           </a>
           <a
-            href={aboutHref}
-            className="flex h-[72px] flex-1 items-center border-b border-[#ffffff26] px-6 text-sm font-medium text-[#ffffff99] transition hover:text-white sm:px-12 xl:h-full xl:border-b-0 xl:border-r"
+            href="/about"
+            className={navLinkClass("about")}
           >
             About
           </a>
           <a
             href="/gallery"
-            className={`flex h-[72px] flex-1 items-center px-6 text-sm font-medium transition hover:text-white sm:px-12 xl:h-full ${
-              page === "gallery" ? "text-white" : "text-[#ffffff99]"
-            }`}
+            className={navLinkClass("gallery", false)}
           >
             Gallery
           </a>
@@ -252,7 +254,7 @@ export function Footer() {
         </p>
         <a
           href="https://github.com/jellewijma"
-          className="mt-10 inline-flex w-fit border border-[#ffffff40] px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#ffffffcc] transition hover:border-white hover:text-white"
+          className="github-link mt-10 inline-flex w-fit border border-[#9cc7ff66] px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] transition hover:border-[#9cc7ff] hover:text-[#cfe4ff]"
         >
           github.com/jellewijma
         </a>
@@ -328,7 +330,7 @@ export function SelectedPhotoStrip() {
             loading="lazy"
             decoding="async"
           />
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm font-semibold text-white opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">
             {item.label}
           </span>
         </a>

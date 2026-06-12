@@ -16,6 +16,10 @@ body {
   line-height: 1.6;
 }
 
-a {
+.github-link {
   color: #9cc7ff;
+}
+
+.github-link:hover {
+  color: #cfe4ff;
 }
