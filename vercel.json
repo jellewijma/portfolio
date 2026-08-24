@@ -40,6 +40,11 @@
   "rewrites": [
     {
       "source": "/",
+      "has": [{ "type": "host", "value": "project.jellewijma.com" }],
+      "destination": "/workshop"
+    },
+    {
+      "source": "/",
       "has": [{ "type": "host", "value": "admin.jellewijma.com" }],
       "destination": "/admin"
     }
