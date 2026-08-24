@@ -266,11 +266,14 @@
 }
 
 .card {
+  display: block;
   min-height: 380px;
   padding: 28px;
   border-right: 2px solid var(--ink);
   border-bottom: 2px solid var(--ink);
   background: rgba(241, 237, 223, 0.86);
+  color: inherit;
+  text-decoration: none;
   transition: background 160ms ease, transform 160ms ease;
 }
 
