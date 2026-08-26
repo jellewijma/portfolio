@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import { withMicrofrontends } from "@vercel/microfrontends/next/config";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 
@@ -52,4 +53,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withMicrofrontends(nextConfig);

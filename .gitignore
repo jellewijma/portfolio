@@ -23,3 +23,6 @@ public/assets/
 
 # Local screenshots
 screenshots/
+.vercel
+.env.local
+.env.*.local

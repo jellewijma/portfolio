@@ -32,6 +32,7 @@
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.4.0",
+    "@vercel/microfrontends": "2.4.0",
     "@vercel/speed-insights": "^2.0.0",
     "convex": "^1.41.1",
     "next": "^16.2.11",

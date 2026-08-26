@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/microfrontends.json",
+  "applications": {
+    "portfolio": {
+      "packageName": "jellewijma-portfolio",
+      "development": {
+        "local": 3000,
+        "fallback": "jellewijma.com"
+      }
+    },
+    "sanitair": {
+      "packageName": "sanitair-catalog",
+      "development": {
+        "local": 3001
+      },
+      "routing": [
+        {
+          "group": "maximo-design",
+          "paths": ["/maximodesign", "/maximodesign/:path*"]
+        }
+      ]
+    }
+  }
+}
