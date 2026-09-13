@@ -39,6 +39,14 @@
   ],
   "rewrites": [
     {
+      "source": "/play-audio",
+      "destination": "https://play-audio-tau.vercel.app/play-audio"
+    },
+    {
+      "source": "/play-audio/:path*",
+      "destination": "https://play-audio-tau.vercel.app/play-audio/:path*"
+    },
+    {
       "source": "/",
       "has": [{ "type": "host", "value": "admin.jellewijma.com" }],
       "destination": "/admin"

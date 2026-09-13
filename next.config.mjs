@@ -46,7 +46,8 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/:path*",
+        // The audio app supplies its own headers, including its media policy.
+        source: "/((?!play-audio(?:/|$)).*)",
         headers: securityHeaders,
       },
     ];
