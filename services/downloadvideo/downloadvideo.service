@@ -1,0 +1,28 @@
+[Unit]
+Description=YouTube download worker for jellewijma.com
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/jelle/portfolio
+EnvironmentFile=/home/jelle/.config/downloadvideo/service.env
+Environment=PATH=/home/jelle/.local/share/downloadvideo/bin:/home/jelle/.local/bin:/usr/bin:/bin
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/home/jelle/.local/bin/node /home/jelle/portfolio/services/downloadvideo/server.mjs
+Restart=on-failure
+RestartSec=5
+KillMode=control-group
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/jelle/.local/share/downloadvideo/jobs
+MemoryMax=1G
+CPUQuota=150%
+TasksMax=96
+
+[Install]
+WantedBy=default.target
