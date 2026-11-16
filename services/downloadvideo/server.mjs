@@ -42,7 +42,7 @@ export function parseYouTubeUrl(value) {
 }
 
 function safeText(value, fallback = '', length = 200) {
-  return typeof value === 'string' ? value.replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, length) || fallback : fallback;
+  return typeof value === 'string' ? Array.from(value.toWellFormed().replace(/[\x00-\x1f\x7f]/g, '').trim()).slice(0, length).join('') || fallback : fallback;
 }
 
 function publicDownloadError(error) {
@@ -104,7 +104,7 @@ export function parseRange(header, size) {
 }
 
 function disposition(filename) {
-  const clean = filename.replace(/[\x00-\x1f\x7f/\\]/g, '_').slice(0, 150);
+  const clean = Array.from(filename.toWellFormed().replace(/[\x00-\x1f\x7f/\\]/g, '_')).slice(0, 150).join('');
   const ascii = clean.replace(/[^\x20-\x7e]|[";]/g, '_');
   const encoded = encodeURIComponent(clean).replace(/['()*]/g, ch => `%${ch.charCodeAt(0).toString(16).toUpperCase()}`);
   return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;
@@ -300,6 +300,8 @@ export async function createDownloader(overrides = {}) {
       else args.push('-f', `bv[ext=mp4][vcodec^=avc1][height<=${job.quality}]+ba[ext=m4a]/b[ext=mp4][vcodec^=avc1][height<=${job.quality}]`, '--merge-output-format', 'mp4', '--remux-video', 'mp4');
       args.push('--', job.url);
       let finalPath;
+      // Cancellation may arrive while the directory and marker are being created.
+      if (job.cancelled) throw new HttpError(400, job.error || 'Download cancelled.');
       await runChild(args, { timeout: config.jobTimeoutMs, cwd: job.directory, job, onLine(line) {
         if (line.startsWith('__PROGRESS__')) {
           try {

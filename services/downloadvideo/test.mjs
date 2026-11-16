@@ -22,7 +22,7 @@ const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + '\\n');
 const id = new URL(args.at(-1)).searchParams.get('v');
 if (args.includes('--dump-single-json')) {
-  process.stdout.write(JSON.stringify({id, title: 'Café / video', channel:'Test channel', duration: id === 'AAAAAAAAAAA' ? 7201 : 60,
+  process.stdout.write(JSON.stringify({id, title: id === 'FFFFFFFFFFF' ? 'a'.repeat(99) + '😀' : 'Café / video', channel:'Test channel', duration: id === 'AAAAAAAAAAA' ? 7201 : 60,
     is_live:id === 'BBBBBBBBBBB', formats:[360,480,720,1080].map(height => ({ext:'mp4',vcodec:'avc1.640028',height})),
     thumbnail:'http://127.0.0.1/private', secret:'do not return', formats_extra:['irrelevant']}));
 } else {
@@ -133,6 +133,18 @@ test('MP4 job lifecycle produces a capability download with HEAD, Range and safe
   const download = calls.find(args => !args.includes('--dump-single-json'));
   assert.ok(download.includes('--no-simulate')); assert.ok(download.includes('--ignore-config')); assert.ok(download.includes('--no-plugin-dirs'));
   assert.ok(download.includes('--remux-video')); assert.equal(download.at(-1), url(VIDEO));
+});
+
+test('long Unicode titles keep complete emoji in downloadable filenames', async t => {
+  const { base, post, request } = await fixture(t);
+  const { id } = await (await post('/jobs', { url: url('FFFFFFFFFFF'), format: 'mp4', quality: 720 })).json();
+  const state = await waitFor(request, id);
+  assert.equal(state.status, 'ready');
+  assert.equal(state.filename, 'a'.repeat(99) + '😀.mp4');
+  const response = await fetch(base + '/files/' + id);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-disposition'), /%F0%9F%98%80\.mp4/);
+  await response.arrayBuffer();
 });
 
 test('MP3 selection reaches conversion and the capability expires with disk cleanup', async t => {
