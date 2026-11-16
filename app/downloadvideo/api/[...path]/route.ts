@@ -20,8 +20,13 @@ async function forward(request: NextRequest, context: Context) {
   if (!allowed) return failure("This download request is not supported.", 404);
 
   const origin = request.headers.get("origin");
-  if (origin && origin !== request.nextUrl.origin &&
-      !["https://jellewijma.com", "https://www.jellewijma.com"].includes(origin)) {
+  const allowedOrigins = new Set([
+    request.nextUrl.origin,
+    `${request.nextUrl.protocol}//${request.headers.get("host")}`,
+    "https://jellewijma.com",
+    "https://www.jellewijma.com",
+  ]);
+  if (origin && !allowedOrigins.has(origin)) {
     return failure("Open the downloader on jellewijma.com and try again.", 403);
   }
 
