@@ -11,7 +11,7 @@
 - Binaries and temporary files: `~/.local/share/downloadvideo/`
 - Logs: `journalctl --user -u downloadvideo.service`
 
-The tracked systemd unit uses the current Appa paths. It runs as Jelle with a 1 GB memory ceiling, a CPU limit and filesystem restrictions. It starts at login through the existing user service manager.
+The tracked systemd unit uses the current Appa paths. It runs as Jelle with a 1 GB memory ceiling, a CPU limit and filesystem restrictions. Appa has user lingering enabled, so the worker starts automatically through the persistent user service manager.
 
 Vercel requests authenticate with the platform's `x-vercel-oidc-token`. The worker verifies the signature and the exact portfolio team, project and production or preview environment against Vercel's public keys. The shared key in the local environment is only needed for direct operations and local development. No shared secret needs to be configured on Vercel.
 

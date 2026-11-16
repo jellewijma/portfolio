@@ -83,6 +83,9 @@ async function forward(request: NextRequest, context: Context) {
       redirect: "error",
       signal: AbortSignal.timeout(request.method === "POST" ? 55000 : 20000),
     });
+    if ([401, 403].includes(response.status) || (response.status === 404 && request.method === "POST")) {
+      return failure("The download server is temporarily unavailable. Please try again later.", 503);
+    }
     if (!response.headers.get("content-type")?.includes("application/json")) {
       return failure("The download server is temporarily unavailable. Please try again.", 502);
     }
