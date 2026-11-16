@@ -22,12 +22,26 @@ const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + '\\n');
 const id = new URL(args.at(-1)).searchParams.get('v');
 if (args.includes('--dump-single-json')) {
+  const formats = id === 'GGGGGGGGGGG' ? [
+    {ext:'mp4',vcodec:'avc1.640028',width:1280,height:720},
+    {ext:'webm',vcodec:'vp9',width:1920,height:1080},
+    {ext:'mp4',vcodec:'av01.0.12M.10',width:3840,height:2160},
+    {ext:'webm',vcodec:'vp9',width:7680,height:4320},
+    {ext:'mp4',vcodec:'av01.0.12M.10',width:7680,height:4320},
+    {ext:'mp4',vcodec:'av01',width:15360,height:8640,has_drm:true},
+    {ext:'mhtml',vcodec:'images',width:20000,height:10000},
+    {ext:'m4a',vcodec:'none',width:20000,height:10000},
+    {ext:'mp4',vcodec:null,width:20000,height:10000}
+  ] : id === 'HHHHHHHHHHH' ? [360,720,1080,2160].map(width => ({ext:'webm',vcodec:'vp9',width,height:Math.round(width*16/9)}))
+    : id === 'IIIIIIIIIII' ? [{ext:'mp4',vcodec:'avc1',width:320,height:240}]
+    : id === 'JJJJJJJJJJJ' ? [{ext:'m4a',vcodec:'none',height:1080}]
+    : [360,480,720,1080].map(height => ({ext:'mp4',vcodec:'avc1.640028',width:Math.round(height*16/9),height}));
   process.stdout.write(JSON.stringify({id, title: id === 'FFFFFFFFFFF' ? 'a'.repeat(99) + '😀' : 'Café / video', channel:'Test channel', duration: id === 'AAAAAAAAAAA' ? 7201 : 60,
-    is_live:id === 'BBBBBBBBBBB', formats:[360,480,720,1080].map(height => ({ext:'mp4',vcodec:'avc1.640028',height})),
+    is_live:id === 'BBBBBBBBBBB', formats,
     thumbnail:'http://127.0.0.1/private', secret:'do not return', formats_extra:['irrelevant']}));
 } else {
   if (id === 'EEEEEEEEEEE') { process.stderr.write('Sign in to confirm you are not a bot'); process.exit(1); }
-  const ext = args.includes('-x') ? 'mp3' : 'mp4';
+  const ext = args.includes('-x') ? 'mp3' : args[args.indexOf('--remux-video')+1] === 'mkv' ? 'mkv' : 'mp4';
   const filename = args[args.indexOf('-o')+1].replace('%(ext)s', ext);
   process.stdout.write('__PROGRESS__' + JSON.stringify({status:'downloading', downloaded_bytes:5,total_bytes:15}) + '\\n');
   setTimeout(() => {
@@ -61,6 +75,15 @@ async function waitFor(request, id, desired = ['ready', 'error']) {
     await delay(15);
   }
   assert.fail('Job did not reach the requested state.');
+}
+
+async function waitForEmptyDirectory(directory) {
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    if ((await readdir(directory)).length === 0) return;
+    await delay(15);
+  }
+  assert.deepEqual(await readdir(directory), [], 'Temporary files should be removed after the job ends.');
 }
 
 test('YouTube links canonicalize and reject arbitrary hosts, schemes, ports and playlists', () => {
@@ -98,15 +121,85 @@ test('HTTP health is public; API auth, prefix handling, JSON and body limits are
 test('metadata is bounded, cached, uses safe thumbnails, and rejects live/long videos', async t => {
   const { post, log } = await fixture(t);
   const first = await (await post('/info', { url: url(VIDEO) })).json();
-  assert.deepEqual(Object.keys(first).sort(), ['channel', 'duration', 'id', 'qualities', 'thumbnail', 'title']);
+  assert.deepEqual(Object.keys(first).sort(), ['bestQuality', 'channel', 'duration', 'id', 'qualities', 'thumbnail', 'title']);
   assert.equal(first.thumbnail, `https://i.ytimg.com/vi/${VIDEO}/hqdefault.jpg`);
   assert.deepEqual(first.qualities, [1080, 720, 480, 360]);
+  assert.equal(first.bestQuality, 1080);
   assert.equal((await post('/info', { url: `https://youtu.be/${VIDEO}` })).status, 200);
   const calls = (await readFile(log, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
   assert.equal(calls.length, 1);
   assert.equal(calls[0].at(-1), url(VIDEO));
   assert.equal((await post('/info', { url: url('AAAAAAAAAAA') })).status, 400);
   assert.equal((await post('/info', { url: url('BBBBBBBBBBB') })).status, 400);
+});
+
+test('quality discovery includes original VP9 and AV1 streams above 1080p without DRM, audio or storyboards', async t => {
+  const { post } = await fixture(t);
+  const high = await (await post('/info', { url: url('GGGGGGGGGGG') })).json();
+  assert.deepEqual(high.qualities, [4320, 2160, 1080, 720]);
+  assert.equal(high.bestQuality, 4320);
+  const portrait = await (await post('/info', { url: url('HHHHHHHHHHH') })).json();
+  assert.deepEqual(portrait.qualities, [2160, 1080, 720, 360]);
+  const low = await (await post('/info', { url: url('IIIIIIIIIII') })).json();
+  assert.deepEqual(low.qualities, [240]);
+  assert.equal(low.bestQuality, 240);
+  const audio = await (await post('/info', { url: url('JJJJJJJJJJJ') })).json();
+  assert.deepEqual(audio.qualities, []);
+  assert.equal(audio.bestQuality, null);
+});
+
+test('Best available keeps uncapped original video and audio and serves a lossless MKV attachment', async t => {
+  const { base, post, request, log } = await fixture(t);
+  const response = await post('/jobs', { url: url('GGGGGGGGGGG'), format: 'best', quality: 'best' });
+  assert.equal(response.status, 202);
+  const { id } = await response.json();
+  const state = await waitFor(request, id);
+  assert.equal(state.status, 'ready');
+  assert.match(state.filename, /\.mkv$/);
+  const file = await fetch(base + '/files/' + id);
+  assert.equal(file.status, 200);
+  assert.equal(file.headers.get('content-type'), 'video/x-matroska');
+  assert.match(file.headers.get('content-disposition'), /\.mkv/);
+  assert.equal(await file.text(), '0123456789video');
+  const head = await fetch(base + '/files/' + id, { method: 'HEAD' });
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get('content-length'), '15');
+  const range = await fetch(base + '/files/' + id, { headers: { Range: 'bytes=2-5' } });
+  assert.equal(range.status, 206);
+  assert.equal(await range.text(), '2345');
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+  const download = calls.find(args => !args.includes('--dump-single-json'));
+  assert.equal(download[download.indexOf('-f')+1], 'bv+ba/b');
+  assert.equal(download[download.indexOf('--format-sort')+1], 'res,fps,hdr,lang,quality');
+  assert.ok(download.includes('--format-sort-force'));
+  assert.equal(download[download.indexOf('--merge-output-format')+1], 'mkv');
+  assert.equal(download[download.indexOf('--remux-video')+1], 'mkv');
+  assert.ok(!download.some(arg => /height<=|width<=|vcodec|ext=/.test(arg)));
+  assert.ok(!download.includes('--recode-video'));
+  assert.ok(!download.includes('--audio-format'));
+});
+
+test('explicit original-quality resolutions support portrait video and reject absent resolutions', async t => {
+  const { post, request, log } = await fixture(t);
+  const { id } = await (await post('/jobs', { url: url('HHHHHHHHHHH'), format: 'best', quality: 1080 })).json();
+  const state = await waitFor(request, id);
+  assert.equal(state.status, 'ready');
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+  const download = calls.find(args => !args.includes('--dump-single-json'));
+  assert.equal(download[download.indexOf('-f')+1], 'bv[width<=1080]+ba/b[width<=1080]');
+  assert.equal(download[download.indexOf('--format-sort')+1], 'res:1080,fps,hdr,lang,quality');
+  assert.equal((await post('/jobs', { url: url('HHHHHHHHHHH'), format: 'best', quality: 4320 })).status, 400);
+  assert.equal((await post('/jobs', { url: url('JJJJJJJJJJJ'), format: 'best', quality: 'best' })).status, 400);
+});
+
+test('legacy low-resolution MP4 clients and MP3 with Best available remain accepted', async t => {
+  const { post, request } = await fixture(t);
+  const legacy = await post('/jobs', { url: url('IIIIIIIIIII'), format: 'mp4', quality: 360 });
+  assert.equal(legacy.status, 202);
+  assert.equal((await waitFor(request, (await legacy.json()).id)).status, 'ready');
+  const audio = await post('/jobs', { url: url(VIDEO), format: 'mp3', quality: 'best' });
+  assert.equal(audio.status, 202);
+  assert.match((await waitFor(request, (await audio.json()).id)).filename, /\.mp3$/);
 });
 
 test('MP4 job lifecycle produces a capability download with HEAD, Range and safe filenames', async t => {
@@ -199,7 +292,7 @@ test('metadata concurrency and maximum final output size are enforced', async t 
   const { id } = await (await post('/jobs', { url: url(VIDEO), format: 'mp4', quality: 720 })).json();
   const state = await waitFor(request, id);
   assert.equal(state.status, 'error'); assert.match(state.error, /download limit/);
-  assert.deepEqual(await readdir(dataDir), []);
+  await waitForEmptyDirectory(dataDir);
 });
 
 test('process timeout and upstream bot blocks become safe errors and remove temporary files', async t => {
@@ -211,7 +304,7 @@ test('process timeout and upstream bot blocks become safe errors and remove temp
   const failedId = (await (await upstream.post('/jobs', { url: url('EEEEEEEEEEE'), format: 'mp4', quality: 720 })).json()).id;
   const blocked = await waitFor(upstream.request, failedId);
   assert.equal(blocked.status, 'error'); assert.match(blocked.error, /YouTube blocked/);
-  assert.deepEqual(await readdir(dataDir), []);
+  await waitForEmptyDirectory(dataDir);
 });
 
 test('DELETE cancels a running process, revokes its capability and cleans the directory', async t => {
@@ -222,7 +315,7 @@ test('DELETE cancels a running process, revokes its capability and cleans the di
   assert.equal((await fetch(base + '/files/' + id)).status, 404);
   const state = await waitFor(request, id);
   assert.equal(state.status, 'error'); assert.match(state.error, /cancelled/);
-  await delay(50); assert.deepEqual(await readdir(dataDir), []);
+  await waitForEmptyDirectory(dataDir);
 });
 
 test('low disk space blocks download before starting yt-dlp media work', async t => {

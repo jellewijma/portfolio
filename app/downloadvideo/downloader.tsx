@@ -4,14 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import styles from "./downloadvideo.module.css";
 
-type Quality = 1080 | 720 | 480 | 360;
+type Quality = "best" | number;
+type Format = "best" | "mp3";
 type Video = {
   id: string;
   title: string;
   channel: string;
   duration: number | null;
   thumbnail: string | null;
-  qualities: Quality[];
+  qualities: number[];
+  bestQuality?: number | null;
 };
 type Job = {
   id: string;
@@ -67,6 +69,10 @@ function durationLabel(seconds: number | null): string {
   return hours ? `${hours}:${String(minutes).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}` : `${minutes}:${String(total % 60).padStart(2, "0")}`;
 }
 
+function qualityLabel(value: number): string {
+  return `${value}p${value === 4320 ? " · 8K" : value === 2160 ? " · 4K" : value === 1440 ? " · QHD" : value === 1080 ? " · Full HD" : value === 720 ? " · HD" : ""}`;
+}
+
 async function request<T>(path: string, signal: AbortSignal, body?: object): Promise<T> {
   const response = await fetch(`/downloadvideo/api/${path}`, {
     method: body ? "POST" : "GET",
@@ -85,8 +91,8 @@ export default function Downloader() {
   const [url, setUrl] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
   const [video, setVideo] = useState<Video | null>(null);
-  const [format, setFormat] = useState<"mp4" | "mp3">("mp4");
-  const [quality, setQuality] = useState<Quality>(1080);
+  const [format, setFormat] = useState<Format>("best");
+  const [quality, setQuality] = useState<Quality>("best");
   const [loading, setLoading] = useState<"info" | "job" | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
@@ -145,9 +151,9 @@ export default function Downloader() {
     try {
       const result = await request<Video>("info", controller.signal, { url: normalized });
       if (controller.signal.aborted) return;
-      const qualities = [...new Set(result.qualities)].filter((value): value is Quality => [1080, 720, 480, 360].includes(value)).sort((a, b) => b - a);
+      const qualities = [...new Set(result.qualities)].filter((value) => Number.isInteger(value) && value > 0).sort((a, b) => b - a);
       setVideo({ ...result, qualities }); setSourceUrl(normalized);
-      setQuality(qualities[0] || 360); setFormat(qualities.length ? "mp4" : "mp3");
+      setQuality("best"); setFormat(qualities.length ? "best" : "mp3");
     } catch (caught) {
       if (!controller.signal.aborted) setError(caught instanceof Error ? caught.message : "Could not find this video. Please try again.");
     } finally { if (!controller.signal.aborted) setLoading(null); }
@@ -198,6 +204,8 @@ export default function Downloader() {
   const progress = typeof job?.progress === "number" && Number.isFinite(job.progress) ? Math.min(100, Math.max(0, job.progress)) : null;
   const readyUrl = job?.status === "ready" ? httpsUrl(job.downloadUrl) : undefined;
   const thumbnail = httpsUrl(video?.thumbnail);
+  const highestQuality = video?.qualities[0];
+  const saveLabel = format === "mp3" ? "MP3" : job?.filename?.toLowerCase().endsWith(".mkv") ? "MKV" : "video";
 
   return (
     <div className={styles.page}>
@@ -247,16 +255,22 @@ export default function Downloader() {
             <fieldset className={styles.formatField} disabled={busy || job?.status === "ready"}>
               <legend>Save as</legend>
               <div className={styles.formats}>
-                <label className={`${styles.formatChoice} ${format === "mp4" ? styles.selected : ""} ${!video.qualities.length ? styles.unavailable : ""}`}>
-                  <input type="radio" name="format" value="mp4" checked={format === "mp4"} disabled={!video.qualities.length} onChange={() => { setFormat("mp4"); setJob(null); setError(""); }} />
-                  <Icon name="video" /><span><strong>Video</strong><small>MP4 · video + audio</small></span><span className={styles.radioMark} />
+                <label className={`${styles.formatChoice} ${format === "best" ? styles.selected : ""} ${!video.qualities.length ? styles.unavailable : ""}`}>
+                  <input type="radio" name="format" value="best" checked={format === "best"} disabled={!video.qualities.length} onChange={() => { setFormat("best"); setJob(null); setError(""); }} />
+                  <Icon name="video" /><span><strong>Video</strong><small>MKV · original video + audio</small></span><span className={styles.radioMark} />
                 </label>
                 <label className={`${styles.formatChoice} ${format === "mp3" ? styles.selected : ""}`}>
                   <input type="radio" name="format" value="mp3" checked={format === "mp3"} onChange={() => { setFormat("mp3"); setJob(null); setError(""); }} />
                   <Icon name="audio" /><span><strong>Audio</strong><small>MP3 · audio only</small></span><span className={styles.radioMark} />
                 </label>
               </div>
-              {format === "mp4" && <div className={styles.qualityRow}><label htmlFor="video-quality">Video quality</label><select id="video-quality" value={quality} onChange={(event) => setQuality(Number(event.target.value) as Quality)}>{video.qualities.map((value) => <option key={value} value={value}>Up to {value}p{value === 1080 ? " · Full HD" : value === 720 ? " · HD" : ""}</option>)}</select></div>}
+              {format === "best" && <>
+                <div className={styles.qualityRow}><label htmlFor="video-quality">Video quality</label><select id="video-quality" value={quality} onChange={(event) => setQuality(event.target.value === "best" ? "best" : Number(event.target.value))}>
+                  <option value="best">Best available{highestQuality ? ` · ${highestQuality}p` : ""}</option>
+                  {video.qualities.map((value) => <option key={value} value={value}>{qualityLabel(value)}</option>)}
+                </select></div>
+                <p className={styles.help}>Original quality is saved as MKV without re-encoding.</p>
+              </>}
             </fieldset>
 
             {job?.status === "queued" || job?.status === "processing" ? <div className={styles.progressSection}>
@@ -265,16 +279,16 @@ export default function Downloader() {
               <div className={styles.waitRow}><p>You can save the file when it is ready.</p><button className={styles.textButton} disabled={cancelling} onClick={cancelDownload}>{cancelling ? "Cancelling" : "Cancel download"}</button></div>
             </div> : job?.status === "ready" ? <div className={styles.readySection}>
               <p className={styles.readyLabel} role="status"><Icon name="check" /> Your file is ready.</p>
-              {readyUrl ? <a href={readyUrl} className={styles.primary} download={job.filename || true}>Save {format.toUpperCase()} <Icon name="download" /></a> : <p role="alert">The file link is unavailable. Please prepare the file again.</p>}
+              {readyUrl ? <a href={readyUrl} className={styles.primary} download={job.filename || true}>Save {saveLabel} <Icon name="download" /></a> : <p role="alert">The file link is unavailable. Please prepare the file again.</p>}
               <p className={styles.help}>The download link expires after 1 hour.</p>
               <button type="button" className={styles.textButton} onClick={() => { setJob(null); setError(""); }}>Choose another format <Icon name="arrow" /></button>
             </div> : <div className={styles.actionRow}>
-              <p>{format === "mp4" ? `MP4 with audio · up to ${quality}p` : "MP3 audio"}<span>Prepared from the original video.</span></p>
-              <button type="button" className={styles.primary} disabled={busy} onClick={prepareFile}>{loading === "job" ? <><span className={styles.spinner} /> Starting</> : <>Prepare {format.toUpperCase()} <Icon name="download" /></>}</button>
+              <p>{format === "best" ? quality === "best" ? "Best available video + audio" : `${quality}p video + audio` : "MP3 audio"}<span>{format === "best" ? "Original streams preserved." : "Prepared from the original video."}</span></p>
+              <button type="button" className={styles.primary} disabled={busy} onClick={prepareFile}>{loading === "job" ? <><span className={styles.spinner} /> Starting</> : <>Prepare {format === "best" ? "video" : "MP3"} <Icon name="download" /></>}</button>
             </div>}
           </div> : !loading && <div className={styles.emptyState}><Icon name="download" /><p>Your video will appear here.</p><span>Start with a YouTube link above.</span></div>}
         </section>
-        <p className={styles.footnote}>Up to 2 hours per video · 1 GB per file.<br />Download videos you own or have permission to save.</p>
+        <p className={styles.footnote}>Up to 2 hours per video · 10 GB per file.<br />Download videos you own or have permission to save.</p>
       </main>
       <footer className={styles.footer}><a href="/">jellewijma.com</a><span>Video downloader</span></footer>
     </div>

@@ -36,4 +36,6 @@ Controls have square corners. Circular marks identify radio selection and loadin
 
 `page.tsx` supplies noindex metadata. `downloader.tsx` calls the same-origin API for video information, job creation, polling and cancellation. The API forwards requests to the persistent backend. Ready files download through an HTTPS attachment link that expires after one hour.
 
+Video defaults to Best available. Resolution options come from the video's available streams without a fixed resolution list or codec filter. The first option shows the highest available resolution; individual choices include the actual resolutions and labels for 4K and 8K. Portrait videos use their shorter dimension for familiar quality labels. Original video and audio streams save together in MKV without re-encoding. Audio remains available as MP3. The ready action names the actual file type. The visible file limit is 10 GB.
+
 Progress uses actual backend values and `scaleX`. Keyboard focus, status announcements, errors and disabled states are explicit. Reduced-motion preferences remove animation.

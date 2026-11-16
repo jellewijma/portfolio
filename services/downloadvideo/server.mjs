@@ -10,7 +10,7 @@ import { createOidcVerifier } from './oidc.mjs';
 const ID = /^[A-Za-z0-9_-]{11}$/;
 const JOB_ID = /^[a-f0-9]{64}$/;
 const OWNER = '.downloadvideo-job';
-const QUALITIES = [1080, 720, 480, 360];
+const LEGACY_QUALITIES = [1080, 720, 480, 360];
 const HOUR = 3_600_000;
 
 export class HttpError extends Error {
@@ -43,6 +43,21 @@ export function parseYouTubeUrl(value) {
 
 function safeText(value, fallback = '', length = 200) {
   return typeof value === 'string' ? Array.from(value.toWellFormed().replace(/[\x00-\x1f\x7f]/g, '').trim()).slice(0, length).join('') || fallback : fallback;
+}
+
+function videoResolution(format) {
+  if (!format || format.has_drm || format.ext === 'mhtml' ||
+      typeof format.vcodec !== 'string' || !format.vcodec || format.vcodec === 'none' ||
+      !Number.isFinite(format.height) || format.height <= 0) return null;
+  const shortest = Number.isFinite(format.width) && format.width > 0 ? Math.min(format.width, format.height) : format.height;
+  return Math.round(shortest) || null;
+}
+
+function sizeLabel(bytes) {
+  if (bytes >= 1024 ** 3) return `${Number((bytes / 1024 ** 3).toFixed(1))} GB`;
+  if (bytes >= 1024 ** 2) return `${Number((bytes / 1024 ** 2).toFixed(1))} MB`;
+  if (bytes >= 1024) return `${Number((bytes / 1024).toFixed(1))} KB`;
+  return `${bytes} bytes`;
 }
 
 function publicDownloadError(error) {
@@ -135,7 +150,7 @@ export async function createDownloader(overrides = {}) {
     ffmpegDir: process.env.FFMPEG_DIR || '/home/jelle/.local/share/downloadvideo/bin',
     nodeBin: '/home/jelle/.local/bin/node',
     maxActive: 2, maxQueued: 8, maxMetadata: 4, maxDuration: 7200,
-    maxOutputBytes: 1024 ** 3, maxDiskBytes: 4 * 1024 ** 3, minFreeBytes: 1024 ** 3,
+    maxOutputBytes: 10 * 1024 ** 3, maxDiskBytes: 40 * 1024 ** 3, minFreeBytes: 2 * 1024 ** 3,
     jobTimeoutMs: 15 * 60_000, metadataTimeoutMs: 45_000,
     ttlMs: HOUR, metadataTtlMs: 10 * 60_000, cleanupIntervalMs: 60_000,
     quotaIntervalMs: 2000, creationsPerHour: 10, maxStdoutBytes: 8 * 1024 ** 2,
@@ -245,17 +260,18 @@ export async function createDownloader(overrides = {}) {
       if (data.is_live || ['is_live', 'is_upcoming', 'post_live'].includes(data.live_status)) throw new HttpError(400, 'Live and upcoming videos are not supported.');
       if (!Number.isFinite(data.duration) || data.duration <= 0) throw new HttpError(400, 'This video has no known duration and cannot be downloaded.');
       if (data.duration > config.maxDuration) throw new HttpError(400, 'Choose a video that is two hours or shorter.');
-      const heights = Array.isArray(data.formats) ? data.formats.filter(format => format.ext === 'mp4' && /^avc1/.test(format.vcodec ?? '') && Number.isFinite(format.height)).map(format => format.height) : [];
-      const maxHeight = Math.max(0, ...heights);
+      const formats = Array.isArray(data.formats) ? data.formats.filter(format => videoResolution(format) !== null) : [];
+      const qualities = [...new Set(formats.map(videoResolution))].sort((a, b) => b - a);
+      const largest = formats.reduce((best, format) => !best || videoResolution(format) > videoResolution(best) ? format : best, null);
+      const portrait = largest && Number.isFinite(largest.width) && largest.width > 0 && largest.width < largest.height;
       const info = {
         id: parsed.id, title: safeText(data.title, 'YouTube video'),
         channel: safeText(data.channel || data.uploader, 'YouTube'), duration: data.duration,
         thumbnail: `https://i.ytimg.com/vi/${parsed.id}/hqdefault.jpg`,
-        qualities: QUALITIES.filter(quality => quality <= maxHeight),
+        qualities, bestQuality: qualities[0] ?? null,
       };
-      if (maxHeight > 0 && info.qualities.length === 0) info.qualities.push(360);
       metadata.delete(parsed.id);
-      metadata.set(parsed.id, { info, expires: Date.now() + config.metadataTtlMs });
+      metadata.set(parsed.id, { info, portrait: Boolean(portrait), expires: Date.now() + config.metadataTtlMs });
       while (metadata.size > 100) metadata.delete(metadata.keys().next().value);
       return info;
     })();
@@ -297,7 +313,13 @@ export async function createDownloader(overrides = {}) {
         '--match-filters', `!is_live & duration <= ${config.maxDuration}`,
         '-o', path.join(job.directory, 'video.%(ext)s')];
       if (job.format === 'mp3') args.push('-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '192K');
-      else args.push('-f', `bv[ext=mp4][vcodec^=avc1][height<=${job.quality}]+ba[ext=m4a]/b[ext=mp4][vcodec^=avc1][height<=${job.quality}]`, '--merge-output-format', 'mp4', '--remux-video', 'mp4');
+      else if (job.format === 'best') {
+        const dimension = job.portrait ? 'width' : 'height';
+        const selection = job.quality === 'best' ? 'bv+ba/b' : `bv[${dimension}<=${job.quality}]+ba/b[${dimension}<=${job.quality}]`;
+        const resolution = job.quality === 'best' ? 'res' : `res:${job.quality}`;
+        args.push('-f', selection, '--format-sort-force', '--format-sort', `${resolution},fps,hdr,lang,quality`,
+          '--merge-output-format', 'mkv', '--remux-video', 'mkv');
+      } else args.push('-f', `bv[ext=mp4][vcodec^=avc1][height<=${job.quality}]+ba[ext=m4a]/b[ext=mp4][vcodec^=avc1][height<=${job.quality}]`, '--merge-output-format', 'mp4', '--remux-video', 'mp4');
       args.push('--', job.url);
       let finalPath;
       // Cancellation may arrive while the directory and marker are being created.
@@ -316,17 +338,17 @@ export async function createDownloader(overrides = {}) {
         }
       } });
       if (job.cancelled) throw new HttpError(400, job.error || 'Download cancelled.');
-      const expected = path.join(job.directory, `video.${job.format}`);
+      const expected = path.join(job.directory, `video.${job.extension}`);
       if (typeof finalPath !== 'string' || path.resolve(finalPath) !== expected) throw new HttpError(502, 'The video could not be converted to the requested format.');
       const file = await lstat(expected);
       if (!file.isFile() || file.size === 0) throw new HttpError(502, 'YouTube returned an empty file.');
-      if (file.size > config.maxOutputBytes) throw new HttpError(413, 'The file exceeds the 1 GB download limit. Try a lower quality or shorter video.');
+      if (file.size > config.maxOutputBytes) throw new HttpError(413, `The file exceeds the ${sizeLabel(config.maxOutputBytes)} download limit. Try a lower quality or shorter video.`);
       for (const entry of await readdir(job.directory)) {
-        if (entry !== OWNER && entry !== `video.${job.format}`) await rm(path.join(job.directory, entry), { recursive: true, force: true });
+        if (entry !== OWNER && entry !== `video.${job.extension}`) await rm(path.join(job.directory, entry), { recursive: true, force: true });
       }
       if (job.cancelled) throw new HttpError(400, job.error || 'Download cancelled.');
       job.file = expected; job.size = file.size;
-      job.filename = `${safeText(job.title, 'YouTube video', 100).replace(/[\\/]/g, '_')}.${job.format}`;
+      job.filename = `${safeText(job.title, 'YouTube video', 100).replace(/[\\/]/g, '_')}.${job.extension}`;
       job.status = 'ready'; job.progress = 100; job.stage = 'Ready to download';
       job.expires = Date.now() + config.ttlMs;
     } catch (error) {
@@ -381,7 +403,7 @@ export async function createDownloader(overrides = {}) {
     try { range = parseRange(req.headers.range, job.size); }
     catch (error) { res.setHeader('Content-Range', `bytes */${job.size}`); throw error; }
     const headers = {
-      'Content-Type': job.format === 'mp3' ? 'audio/mpeg' : 'video/mp4',
+      'Content-Type': job.extension === 'mp3' ? 'audio/mpeg' : job.extension === 'mkv' ? 'video/x-matroska' : 'video/mp4',
       'Content-Disposition': disposition(job.filename), 'Accept-Ranges': 'bytes',
       'Content-Length': range ? range.end - range.start + 1 : job.size,
     };
@@ -420,7 +442,10 @@ export async function createDownloader(overrides = {}) {
       if (route === '/jobs' && req.method === 'POST') {
         const body = await requestJson(req);
         const parsed = parseYouTubeUrl(body.url);
-        if (!['mp4', 'mp3'].includes(body.format) || !QUALITIES.includes(body.quality)) throw new HttpError(400, 'Choose MP4 or MP3 and a supported quality.');
+        const validQuality = body.quality === 'best' || (Number.isSafeInteger(body.quality) && body.quality > 0);
+        if (!['best', 'mp4', 'mp3'].includes(body.format) || !validQuality || (body.format === 'mp4' && body.quality === 'best')) {
+          throw new HttpError(400, 'Choose a video or audio format and a supported quality.');
+        }
         const client = safeText(req.headers['x-downloader-client'], req.socket.remoteAddress || 'unknown', 128);
         const now = Date.now();
         const times = (rateLimits.get(client) ?? []).filter(time => now - time < HOUR);
@@ -429,10 +454,15 @@ export async function createDownloader(overrides = {}) {
         times.push(now); rateLimits.set(client, times);
         if (queue.length >= config.maxQueued) throw new HttpError(503, 'The download queue is full. Try again in a moment.');
         const info = await lookup(parsed.url);
-        if (body.format === 'mp4' && !info.qualities.includes(body.quality)) throw new HttpError(400, 'This MP4 quality is unavailable. Choose one of the available qualities or MP3.');
+        if (body.format === 'best' && (info.bestQuality === null || (body.quality !== 'best' && !info.qualities.includes(body.quality)))) {
+          throw new HttpError(400, 'This video quality is unavailable. Choose Best available or one of the listed resolutions.');
+        }
+        const legacyQuality = LEGACY_QUALITIES.includes(body.quality) && (body.quality <= info.bestQuality || (body.quality === 360 && info.bestQuality > 0));
+        if (body.format === 'mp4' && !info.qualities.includes(body.quality) && !legacyQuality) throw new HttpError(400, 'This MP4 quality is unavailable. Choose one of the available qualities or audio.');
         if (queue.length >= config.maxQueued || closed) throw new HttpError(503, 'The download queue is full. Try again in a moment.');
         const id = randomBytes(32).toString('hex');
         const job = { id, url: parsed.url, title: info.title, format: body.format, quality: body.quality,
+          extension: body.format === 'best' ? 'mkv' : body.format, portrait: metadata.get(parsed.id)?.portrait ?? false,
           directory: path.join(config.dataDir, id), status: 'queued', progress: null, stage: 'Waiting to download',
           readers: 0, expires: Infinity, cancelled: false };
         jobs.set(id, job); queue.push(job); pump(); json(res, 202, { id }); return;
