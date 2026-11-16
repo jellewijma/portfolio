@@ -148,7 +148,7 @@ test('long Unicode titles keep complete emoji in downloadable filenames', async 
 });
 
 test('MP3 selection reaches conversion and the capability expires with disk cleanup', async t => {
-  const { base, app, post, request, dataDir, log } = await fixture(t, { ttlMs: 75 });
+  const { base, app, post, request, dataDir, log } = await fixture(t, { ttlMs: 500 });
   const { id } = await (await post('/jobs', { url: url(VIDEO), format: 'mp3', quality: 720 })).json();
   const state = await waitFor(request, id);
   assert.equal(state.status, 'ready'); assert.match(state.filename, /\.mp3$/);
@@ -156,7 +156,7 @@ test('MP3 selection reaches conversion and the capability expires with disk clea
   assert.equal(file.headers.get('content-type'), 'audio/mpeg'); await file.arrayBuffer();
   const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
   assert.ok(calls.some(args => args.includes('--audio-format') && args.includes('mp3')));
-  await delay(90);
+  await delay(550);
   assert.equal((await fetch(base + '/files/' + id)).status, 404);
   await app.cleanup();
   assert.deepEqual(await readdir(dataDir), []);
@@ -178,9 +178,15 @@ test('active work and queue length stay bounded and a queued job can be cancelle
   assert.equal((await request('/jobs/' + second.id)).status, 200);
   assert.equal((await (await request('/jobs/' + second.id)).json()).status, 'queued');
   assert.equal((await post('/jobs', body)).status, 503);
-  await delay(50);
-  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
-  assert.equal(calls.filter(args => !args.includes('--dump-single-json')).length, 1);
+  // Wait for the external mock process to start instead of assuming a 50 ms startup.
+  const deadline = Date.now() + 1500;
+  let downloadCalls = [];
+  while (Date.now() < deadline) {
+    downloadCalls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse).filter(args => !args.includes('--dump-single-json'));
+    if (downloadCalls.length) break;
+    await delay(15);
+  }
+  assert.equal(downloadCalls.length, 1);
   assert.equal((await request('/jobs/' + second.id, { method: 'DELETE' })).status, 200);
   assert.equal((await (await request('/jobs/' + second.id)).json()).status, 'error');
   await request('/jobs/' + first.id, { method: 'DELETE' });
@@ -201,8 +207,9 @@ test('process timeout and upstream bot blocks become safe errors and remove temp
   const { id } = await (await post('/jobs', { url: url('DDDDDDDDDDD'), format: 'mp4', quality: 720 })).json();
   const timeout = await waitFor(request, id);
   assert.equal(timeout.status, 'error'); assert.match(timeout.error, /too long/);
-  const failedId = (await (await post('/jobs', { url: url('EEEEEEEEEEE'), format: 'mp4', quality: 720 })).json()).id;
-  const blocked = await waitFor(request, failedId);
+  const upstream = await fixture(t);
+  const failedId = (await (await upstream.post('/jobs', { url: url('EEEEEEEEEEE'), format: 'mp4', quality: 720 })).json()).id;
+  const blocked = await waitFor(upstream.request, failedId);
   assert.equal(blocked.status, 'error'); assert.match(blocked.error, /YouTube blocked/);
   assert.deepEqual(await readdir(dataDir), []);
 });
