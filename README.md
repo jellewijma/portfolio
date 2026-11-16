@@ -73,6 +73,10 @@ npm run check
 
 This runs the production build, local asset reference check, and dependency audit.
 
+Dependabot checks npm packages, GitHub Actions, and the downloader's Python packages every Monday.
+
+`@vercel/blob` stays pinned to `2.4.0` because `2.9.0` pulls in vulnerable Zod code through `@vercel/oidc` and `@vercel/cli-config` ([GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)). Recheck the SDK dependency tree and run `npm audit` before upgrading it. Keep `@types/node` on the same major version as Node.js in CI.
+
 ## Image Workflow
 
 Seed photos live in `assets/images/source/gallery/` and `assets/images/source/resources/`. Generated responsive seed variants are written to `assets/images/optimized/` by `npm run optimize:images`.
