@@ -12,6 +12,7 @@ const VIMEO_VIDEO = '22439234';
 const VIMEO_UNLISTED = '123456789';
 const VIMEO_HASH = '123abc456d';
 const VIMEO_DRM = '76979871';
+const VIMEO_DENIED = '1216966772';
 const url = id => `https://www.youtube.com/watch?v=${id}`;
 const vimeoPlayer = id => `https://player.vimeo.com/video/${id}`;
 
@@ -30,6 +31,10 @@ const vimeo = source.hostname === 'player.vimeo.com';
 const id = vimeo ? source.pathname.split('/').at(-1) : source.searchParams.get('v');
 if (args.includes('--dump-single-json')) {
   if (vimeo) {
+    if (id === '${VIMEO_DENIED}') {
+      process.stderr.write('Unable to download webpage: HTTP Error 401: Unauthorized');
+      process.exit(1);
+    }
     const unlisted = id === '${VIMEO_UNLISTED}';
     if (unlisted && source.searchParams.get('h') !== '${VIMEO_HASH}') {
       process.stderr.write('Vimeo rejected the privacy settings for ' + source.href);
@@ -196,6 +201,15 @@ test('Vimeo metadata verifies the extractor and isolates unlisted links by priva
   assert.equal((await post('/info', { url: vimeoPlayer('1234') })).status, 400);
   const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
   assert.equal(calls.filter(args => args.at(-1) === `${vimeoPlayer(VIMEO_UNLISTED)}?h=${VIMEO_HASH}`).length, 1);
+});
+
+test('Vimeo access refusals return an actionable error instead of a retry prompt', async t => {
+  const { post } = await fixture(t);
+  const denied = await post('/info', { url: vimeoPlayer(VIMEO_DENIED) });
+  assert.equal(denied.status, 502);
+  const { error } = await denied.json();
+  assert.match(error, /Vimeo refused the download server’s request/);
+  assert.match(error, /look for the Download button/);
 });
 
 test('Vimeo jobs check format availability and save a video or audio attachment', async t => {
