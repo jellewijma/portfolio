@@ -4,11 +4,16 @@ import { mkdtemp, mkdir, writeFile, readFile, readdir, rm } from 'node:fs/promis
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
-import { createDownloader, parseYouTubeUrl, parseRange } from './server.mjs';
+import { createDownloader, parseVideoUrl, parseRange } from './server.mjs';
 
 const KEY = 'a-local-test-key-with-at-least-24-characters';
 const VIDEO = 'jNQXAC9IVRw';
+const VIMEO_VIDEO = '22439234';
+const VIMEO_UNLISTED = '123456789';
+const VIMEO_HASH = '123abc456d';
+const VIMEO_DRM = '76979871';
 const url = id => `https://www.youtube.com/watch?v=${id}`;
+const vimeoPlayer = id => `https://player.vimeo.com/video/${id}`;
 
 async function fixture(t, options = {}, prepare) {
   const root = await mkdtemp(path.join(tmpdir(), 'downloadvideo-test-'));
@@ -20,8 +25,24 @@ async function fixture(t, options = {}, prepare) {
 import fs from 'node:fs';
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + '\\n');
-const id = new URL(args.at(-1)).searchParams.get('v');
+const source = new URL(args.at(-1));
+const vimeo = source.hostname === 'player.vimeo.com';
+const id = vimeo ? source.pathname.split('/').at(-1) : source.searchParams.get('v');
 if (args.includes('--dump-single-json')) {
+  if (vimeo) {
+    const unlisted = id === '${VIMEO_UNLISTED}';
+    if (unlisted && source.searchParams.get('h') !== '${VIMEO_HASH}') {
+      process.stderr.write('Vimeo rejected the privacy settings for ' + source.href);
+      process.exit(1);
+    }
+    process.stdout.write(JSON.stringify({
+      id, extractor_key: id === '1234' ? 'Generic' : 'Vimeo', title: unlisted ? 'Unlisted Vimeo video' : 'Vimeo video',
+      uploader: 'Vimeo creator', duration: 60,
+      thumbnail: unlisted ? 'https://i.vimeocdn.com.example.test/private' : 'https://i.vimeocdn.com/video/123.jpg',
+      formats: [720,2160].map(height => ({ext:'mp4',vcodec:'avc1',acodec:'aac',width:Math.round(height*16/9),height})),
+    }));
+    process.exit(0);
+  }
   const formats = id === 'GGGGGGGGGGG' ? [
     {ext:'mp4',vcodec:'avc1.640028',width:1280,height:720},
     {ext:'webm',vcodec:'vp9',width:1920,height:1080},
@@ -41,6 +62,7 @@ if (args.includes('--dump-single-json')) {
     thumbnail:'http://127.0.0.1/private', secret:'do not return', formats_extra:['irrelevant']}));
 } else {
   if (id === 'EEEEEEEEEEE') { process.stderr.write('Sign in to confirm you are not a bot'); process.exit(1); }
+  if (id === '${VIMEO_DRM}') { process.stderr.write('This format is DRM protected. Requested format is not available'); process.exit(1); }
   const ext = args.includes('-x') ? 'mp3' : args[args.indexOf('--remux-video')+1] === 'mkv' ? 'mkv' : 'mp4';
   const filename = args[args.indexOf('-o')+1].replace('%(ext)s', ext);
   process.stdout.write('__PROGRESS__' + JSON.stringify({status:'downloading', downloaded_bytes:5,total_bytes:15}) + '\\n');
@@ -88,14 +110,32 @@ async function waitForEmptyDirectory(directory) {
 
 test('YouTube links canonicalize and reject arbitrary hosts, schemes, ports and playlists', () => {
   for (const input of [url(VIDEO), `https://youtu.be/${VIDEO}?si=anything`, `https://m.youtube.com/shorts/${VIDEO}`, `http://youtube.com/watch?v=${VIDEO}&list=ignored`]) {
-    assert.deepEqual(parseYouTubeUrl(input), { id: VIDEO, url: url(VIDEO) });
+    assert.deepEqual(parseVideoUrl(input), { id: VIDEO, platform: 'youtube', url: url(VIDEO) });
   }
   for (const input of [undefined, 'file:///etc/passwd', 'https://youtube.com.attacker.test/watch?v=' + VIDEO,
     `https://youtube.com@127.0.0.1/watch?v=${VIDEO}`, `https://user@youtube.com/watch?v=${VIDEO}`,
     `https://youtube.com:443/watch?v=${VIDEO}`, `ftp://youtube.com/watch?v=${VIDEO}`,
     'https://youtube.com/playlist?list=PLanything', 'https://youtube.com/watch?v=../../etc/passwd',
     `https://youtu.be/${VIDEO}/extra`, 'https://127.0.0.1/watch?v=' + VIDEO]) {
-    assert.throws(() => parseYouTubeUrl(input), { status: 400 }, String(input));
+    assert.throws(() => parseVideoUrl(input), { status: 400 }, String(input));
+  }
+});
+
+test('Vimeo keeps the privacy hash and only accepts recognized single-video links', () => {
+  for (const input of [`https://vimeo.com/${VIMEO_VIDEO}?share=copy`, `http://www.vimeo.com/${VIMEO_VIDEO}/`, `${vimeoPlayer(VIMEO_VIDEO)}?autoplay=1`]) {
+    assert.deepEqual(parseVideoUrl(input), { id: VIMEO_VIDEO, platform: 'vimeo', url: vimeoPlayer(VIMEO_VIDEO) });
+  }
+  const privatePlayer = `${vimeoPlayer(VIMEO_UNLISTED)}?h=${VIMEO_HASH}`;
+  for (const input of [`https://vimeo.com/${VIMEO_UNLISTED}/${VIMEO_HASH}?share=copy`, `${privatePlayer}&autoplay=1`]) {
+    assert.deepEqual(parseVideoUrl(input), { id: VIMEO_UNLISTED, platform: 'vimeo', url: privatePlayer });
+  }
+  for (const input of [
+    `https://vimeo.com.example.test/${VIMEO_VIDEO}`, `https://user@vimeo.com/${VIMEO_VIDEO}`,
+    `https://player.vimeo.com:443/video/${VIMEO_VIDEO}`, `https://vimeo.com/../${VIMEO_VIDEO}`,
+    `https://vimeo.com/showcase/${VIMEO_VIDEO}`, `https://vimeo.com/${VIMEO_VIDEO}/unknown`,
+    `${vimeoPlayer(VIMEO_VIDEO)}?h=bad`, `${privatePlayer}&h=987abc654d`,
+  ]) {
+    assert.throws(() => parseVideoUrl(input), { status: 400 }, input);
   }
 });
 
@@ -121,7 +161,8 @@ test('HTTP health is public; API auth, prefix handling, JSON and body limits are
 test('metadata is bounded, cached, uses safe thumbnails, and rejects live/long videos', async t => {
   const { post, log } = await fixture(t);
   const first = await (await post('/info', { url: url(VIDEO) })).json();
-  assert.deepEqual(Object.keys(first).sort(), ['bestQuality', 'channel', 'duration', 'id', 'qualities', 'thumbnail', 'title']);
+  assert.deepEqual(Object.keys(first).sort(), ['bestQuality', 'channel', 'duration', 'id', 'platform', 'qualities', 'thumbnail', 'title']);
+  assert.equal(first.platform, 'youtube');
   assert.equal(first.thumbnail, `https://i.ytimg.com/vi/${VIDEO}/hqdefault.jpg`);
   assert.deepEqual(first.qualities, [1080, 720, 480, 360]);
   assert.equal(first.bestQuality, 1080);
@@ -131,6 +172,63 @@ test('metadata is bounded, cached, uses safe thumbnails, and rejects live/long v
   assert.equal(calls[0].at(-1), url(VIDEO));
   assert.equal((await post('/info', { url: url('AAAAAAAAAAA') })).status, 400);
   assert.equal((await post('/info', { url: url('BBBBBBBBBBB') })).status, 400);
+});
+
+test('Vimeo metadata verifies the extractor and isolates unlisted links by privacy hash', async t => {
+  const { post, log } = await fixture(t);
+  const source = `https://vimeo.com/${VIMEO_UNLISTED}/${VIMEO_HASH}`;
+  const response = await post('/info', { url: source });
+  assert.equal(response.status, 200);
+  const info = await response.json();
+  assert.equal(info.platform, 'vimeo');
+  assert.deepEqual(info.qualities, [2160, 720]);
+  assert.equal(info.channel, 'Vimeo creator');
+  assert.equal(info.thumbnail, null);
+  assert.ok(!JSON.stringify(info).includes(VIMEO_HASH));
+  assert.equal((await post('/info', { url: `${vimeoPlayer(VIMEO_UNLISTED)}?h=${VIMEO_HASH}` })).status, 200);
+  for (const invalid of [vimeoPlayer(VIMEO_UNLISTED), `${vimeoPlayer(VIMEO_UNLISTED)}?h=987abc654d`]) {
+    const denied = await post('/info', { url: invalid });
+    assert.equal(denied.status, 502);
+    const { error } = await denied.json();
+    assert.match(error, /Vimeo could not open/);
+    assert.ok(!error.includes(invalid));
+  }
+  assert.equal((await post('/info', { url: vimeoPlayer('1234') })).status, 400);
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+  assert.equal(calls.filter(args => args.at(-1) === `${vimeoPlayer(VIMEO_UNLISTED)}?h=${VIMEO_HASH}`).length, 1);
+});
+
+test('Vimeo jobs check format availability and save a video or audio attachment', async t => {
+  const { base, post, request, log } = await fixture(t);
+  const source = `https://vimeo.com/${VIMEO_VIDEO}`;
+  const info = await (await post('/info', { url: source })).json();
+  assert.equal(info.thumbnail, 'https://i.vimeocdn.com/video/123.jpg');
+  for (const format of ['best', 'mp3']) {
+    const response = await post('/jobs', { url: source, format, quality: 'best' });
+    assert.equal(response.status, 202);
+    const { id } = await response.json();
+    const state = await waitFor(request, id);
+    const isVideo = format === 'best';
+    assert.equal(state.status, 'ready');
+    assert.equal(state.filename, isVideo ? 'Vimeo video.mkv' : 'Vimeo video.mp3');
+    const file = await fetch(`${base}/files/${id}`);
+    assert.equal(file.status, 200);
+    assert.equal(file.headers.get('content-type'), isVideo ? 'video/x-matroska' : 'audio/mpeg');
+    assert.equal(await file.text(), '0123456789video');
+  }
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+  const downloads = calls.filter(args => !args.includes('--dump-single-json'));
+  assert.equal(downloads.length, 2);
+  for (const args of downloads) {
+    assert.equal(args.at(-1), vimeoPlayer(VIMEO_VIDEO));
+    assert.equal(args[args.indexOf('--use-extractors')+1], 'vimeo');
+    assert.ok(args.includes('--check-formats'));
+  }
+  assert.equal(downloads[0][downloads[0].indexOf('-f')+1], 'bv*+ba/bv*');
+  const blocked = await post('/jobs', { url: vimeoPlayer(VIMEO_DRM), format: 'best', quality: 'best' });
+  const failed = await waitFor(request, (await blocked.json()).id);
+  assert.equal(failed.status, 'error');
+  assert.match(failed.error, /Vimeo only offered protected streams/);
 });
 
 test('quality discovery includes original VP9 and AV1 streams above 1080p without DRM, audio or storyboards', async t => {
