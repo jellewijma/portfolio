@@ -217,28 +217,36 @@ test('Vimeo jobs check format availability and save a video or audio attachment'
   const source = `https://vimeo.com/${VIMEO_VIDEO}`;
   const info = await (await post('/info', { url: source })).json();
   assert.equal(info.thumbnail, 'https://i.vimeocdn.com/video/123.jpg');
-  for (const format of ['best', 'mp3']) {
+  const formats = [
+    ['best', 'mkv', 'video/x-matroska'],
+    ['mp4', 'mp4', 'video/mp4'],
+    ['mp3', 'mp3', 'audio/mpeg'],
+  ];
+  for (const [format, extension, mimeType] of formats) {
     const response = await post('/jobs', { url: source, format, quality: 'best' });
     assert.equal(response.status, 202);
     const { id } = await response.json();
     const state = await waitFor(request, id);
-    const isVideo = format === 'best';
     assert.equal(state.status, 'ready');
-    assert.equal(state.filename, isVideo ? 'Vimeo video.mkv' : 'Vimeo video.mp3');
+    assert.equal(state.filename, `Vimeo video.${extension}`);
     const file = await fetch(`${base}/files/${id}`);
     assert.equal(file.status, 200);
-    assert.equal(file.headers.get('content-type'), isVideo ? 'video/x-matroska' : 'audio/mpeg');
+    assert.equal(file.headers.get('content-type'), mimeType);
     assert.equal(await file.text(), '0123456789video');
   }
   const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
   const downloads = calls.filter(args => !args.includes('--dump-single-json'));
-  assert.equal(downloads.length, 2);
+  assert.equal(downloads.length, formats.length);
   for (const args of downloads) {
     assert.equal(args.at(-1), vimeoPlayer(VIMEO_VIDEO));
     assert.equal(args[args.indexOf('--use-extractors')+1], 'vimeo');
     assert.ok(args.includes('--check-formats'));
   }
   assert.equal(downloads[0][downloads[0].indexOf('-f')+1], 'bv*+ba/bv*');
+  const mp4 = downloads[1];
+  assert.equal(mp4[mp4.indexOf('-f')+1], 'bv*+ba/bv*');
+  assert.equal(mp4[mp4.indexOf('--merge-output-format')+1], 'mp4');
+  assert.equal(mp4[mp4.indexOf('--remux-video')+1], 'mp4');
   const blocked = await post('/jobs', { url: vimeoPlayer(VIMEO_DRM), format: 'best', quality: 'best' });
   const failed = await waitFor(request, (await blocked.json()).id);
   assert.equal(failed.status, 'error');
@@ -296,12 +304,40 @@ test('explicit original-quality resolutions support portrait video and reject ab
   const { id } = await (await post('/jobs', { url: url('HHHHHHHHHHH'), format: 'best', quality: 1080 })).json();
   const state = await waitFor(request, id);
   assert.equal(state.status, 'ready');
+  const mp4 = await post('/jobs', { url: url('HHHHHHHHHHH'), format: 'mp4', quality: 1080 });
+  assert.equal(mp4.status, 202);
+  assert.match((await waitFor(request, (await mp4.json()).id)).filename, /\.mp4$/);
   const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
-  const download = calls.find(args => !args.includes('--dump-single-json'));
+  const [download, mp4Download] = calls.filter(args => !args.includes('--dump-single-json'));
   assert.equal(download[download.indexOf('-f')+1], 'bv[width<=1080]+ba/b[width<=1080]');
   assert.equal(download[download.indexOf('--format-sort')+1], 'res:1080,fps,hdr,lang,quality');
+  assert.equal(mp4Download[mp4Download.indexOf('-f')+1], 'bv*[width<=1080]+ba/bv*[width<=1080]');
+  assert.match(mp4Download[mp4Download.indexOf('--format-sort')+1], /^res:1080,/);
   assert.equal((await post('/jobs', { url: url('HHHHHHHHHHH'), format: 'best', quality: 4320 })).status, 400);
+  assert.equal((await post('/jobs', { url: url('HHHHHHHHHHH'), format: 'mp4', quality: 4320 })).status, 400);
   assert.equal((await post('/jobs', { url: url('JJJJJJJJJJJ'), format: 'best', quality: 'best' })).status, 400);
+  assert.equal((await post('/jobs', { url: url('JJJJJJJJJJJ'), format: 'mp4', quality: 'best' })).status, 400);
+});
+
+test('Best available MP4 prioritizes uncapped resolution over codec preference and remuxes without re-encoding', async t => {
+  const { base, post, request, log } = await fixture(t);
+  const response = await post('/jobs', { url: url('GGGGGGGGGGG'), format: 'mp4', quality: 'best' });
+  assert.equal(response.status, 202);
+  const { id } = await response.json();
+  const state = await waitFor(request, id);
+  assert.equal(state.status, 'ready');
+  assert.match(state.filename, /\.mp4$/);
+  const download = await fetch(`${base}/files/${id}`);
+  assert.equal(download.headers.get('content-type'), 'video/mp4');
+  assert.match(download.headers.get('content-disposition'), /\.mp4/);
+  assert.equal(await download.text(), '0123456789video');
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+  const args = calls.find(call => !call.includes('--dump-single-json'));
+  assert.equal(args[args.indexOf('-f')+1], 'bv*+ba/bv*');
+  assert.equal(args[args.indexOf('--format-sort')+1], 'res,fps,hdr,lang,+vcodec:avc,+acodec:m4a,quality');
+  assert.equal(args[args.indexOf('--merge-output-format')+1], 'mp4');
+  assert.equal(args[args.indexOf('--remux-video')+1], 'mp4');
+  assert.ok(!args.includes('--recode-video'));
 });
 
 test('legacy low-resolution MP4 clients and MP3 with Best available remain accepted', async t => {

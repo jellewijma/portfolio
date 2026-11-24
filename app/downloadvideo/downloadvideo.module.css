@@ -66,7 +66,7 @@
 .formatField { margin: 0; padding: 26px 32px 28px; border: 0; min-width: 0; }
 .formatField legend { float: left; width: 100%; padding: 0; margin: 0 0 13px; }
 .formatField:disabled { opacity: .6; }
-.formats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; clear: both; }
+.formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; clear: both; }
 .formatChoice { position: relative; display: flex; align-items: center; gap: 14px; min-height: 84px; padding: 16px; border: 1px solid #ffffff30; cursor: pointer; }
 .formatChoice:hover { border-color: #ffffff70; }
 .formatChoice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -86,7 +86,6 @@
 .qualityRow select { min-width: 164px; min-height: 42px; padding: 8px 34px 8px 12px; border: 1px solid #ffffff40; background: #0c0c0c; color: #ededed; font-size: 13px; }
 .actionRow { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 25px 32px; border-top: 1px solid var(--line); }
 .actionRow > p { margin: 0; font-size: 13px; color: #e0e0e0; }
-.actionRow > p > span { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
 .progressSection { padding: 25px 32px 23px; border-top: 1px solid var(--line); }
 .progressLabel { display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 13px; font-variant-numeric: tabular-nums; }
 .progressLabel > span:first-child { display: flex; align-items: center; gap: 10px; }
@@ -133,8 +132,8 @@
   .sourceLabel { margin-top: 3px; }
   .videoDetails > .textButton { grid-column: 1 / -1; margin-top: -6px; min-height: 30px; justify-self: start; }
   .formatField { padding: 22px 20px; }
-  .formats { gap: 10px; }
-  .formatChoice { gap: 10px; min-height: 101px; padding: 14px 12px; flex-wrap: wrap; }
+  .formats { gap: 8px; }
+  .formatChoice { gap: 8px; min-height: 101px; padding: 12px 10px; flex-wrap: wrap; }
   .formatChoice > svg { width: 19px; height: 19px; }
   .formatChoice > span:first-of-type { flex-basis: 100%; order: 3; }
   .formatChoice .radioMark { margin-left: auto; }
