@@ -95,6 +95,9 @@ function publicDownloadError(error, platform) {
   if (platform === 'vimeo' && /\bDRM\b/i.test(detail)) {
     return 'Vimeo only offered protected streams for this download. Try another video or a lower quality.';
   }
+  if (platform === 'vimeo' && /\bHTTP(?: Error)? 401\b/i.test(detail)) {
+    return 'Vimeo refused the download server’s request. Open the video on Vimeo and look for the Download button.';
+  }
   if (/requested format|format.*not available/i.test(detail)) return 'This format is unavailable for this video. Try a lower quality or MP3.';
   if (platform === 'vimeo' && /privacy|password|log[ -]?in|logged[ -]?in|sign in|403|404|forbidden|restricted|unavailable/i.test(detail)) {
     return 'Vimeo could not open this video. Check the link and make sure the video plays without signing in.';
