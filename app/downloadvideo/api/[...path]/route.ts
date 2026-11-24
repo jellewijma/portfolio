@@ -42,10 +42,10 @@ async function forward(request: NextRequest, context: Context) {
   let body: string | undefined;
   if (request.method === "POST") {
     if (!request.headers.get("content-type")?.startsWith("application/json")) {
-      return failure("Send a YouTube link using the form.", 415);
+      return failure("Send a video link using the form.", 415);
     }
     const reader = request.body?.getReader();
-    if (!reader) return failure("Enter a YouTube link first.", 400);
+    if (!reader) return failure("Enter a video link first.", 400);
     const chunks: Uint8Array[] = [];
     let length = 0;
     try {
@@ -55,7 +55,7 @@ async function forward(request: NextRequest, context: Context) {
         length += next.value.length;
         if (length > 4096) {
           await reader.cancel();
-          return failure("That link is too long. Paste a single YouTube video link.", 413);
+          return failure("That link is too long. Paste a link to a single video.", 413);
         }
         chunks.push(next.value);
       }

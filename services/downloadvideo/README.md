@@ -46,13 +46,15 @@ systemctl --user disable --now downloadvideo.service
 
 ## Limits and behavior
 
-The worker accepts individual public YouTube videos, including Shorts. It rejects live streams, videos over two hours and URLs outside the supported YouTube hosts. Video defaults to **Best available**, selecting the highest available resolution with the original video codec and best original audio. FFmpeg combines the streams into MKV without re-encoding. There is no fixed resolution cap or H.264-only filter for this mode, so available 4K, 8K and higher-resolution streams can be selected. Quality options come from the video's actual streams and use the shorter dimension for portrait videos.
+The worker accepts individual YouTube videos, including Shorts, and Vimeo video and player links. Vimeo requests use the official player and keep the privacy hash from a full unlisted link. The player must make the video available without an account or password. The worker rejects live streams, videos over two hours and unsupported URLs.
+
+Video defaults to **Best available**, selecting the highest available stream resolution and preserving the video and audio codecs. FFmpeg combines the streams into MKV without re-encoding. There is no fixed resolution cap, so available 4K, 8K and higher-resolution streams can be selected. Quality options come from the video's actual streams and use the shorter dimension for portrait videos.
 
 Selecting a numeric resolution sets an upper limit. The older MP4 API remains available for cached clients and compatible H.264/AAC output. MP3 converts audio to 192 kbps; the original-quality video mode preserves the source audio instead.
 
 Two media jobs and four metadata lookups can run concurrently. The queue holds eight jobs, each client can request ten downloads per hour, jobs time out after fifteen minutes, final files are limited to 10 GB and temporary storage has a 40 GB quota. The worker keeps at least 2 GB of disk space free. Metadata is bounded and cached. Completed files expire after one hour; active transfers finish before cleanup. Restarting the worker invalidates its job links and clears marked temporary job directories.
 
-File URLs contain 256-bit random capabilities. API operations require authentication. Files stream directly from disk with attachment, HEAD and byte-range support. Cancellation kills the worker process group and removes temporary files. YouTube may reject or restrict individual videos; errors appear in the page.
+File URLs contain 256-bit random capabilities. API operations require authentication. Files stream directly from disk with attachment, HEAD and byte-range support. Cancellation kills the worker process group and removes temporary files. Provider errors appear in the page.
 
 ## Verification
 
@@ -61,4 +63,4 @@ npm run test:downloadvideo
 npm run check
 ```
 
-Tests cover URL validation, authentication, Vercel tokens, uncapped quality selection, portrait resolution, limits, lifecycle, cancellation, cleanup and byte ranges with a mock downloader. Real original-quality video, MP4 and MP3 processing also need integration checks against YouTube after worker or dependency changes.
+Tests cover URL validation, authentication, Vercel tokens, uncapped quality selection, portrait resolution, limits, lifecycle, cancellation, cleanup and byte ranges with a mock downloader. Use a public video from each provider to verify real downloads after worker or dependency changes.

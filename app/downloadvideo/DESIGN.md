@@ -1,5 +1,5 @@
 ---
-name: YouTube downloader
+name: Video downloader
 description: Implemented design for /downloadvideo on the Jelle Wijma portfolio.
 colors:
   background: "#050505"
@@ -10,7 +10,7 @@ colors:
 
 ## Overview
 
-This route follows the existing black and white portfolio. The heading leads directly into one download form. The video thumbnail provides the only imagery.
+This route follows the existing black and white portfolio. The heading leads directly into one download form for YouTube and Vimeo links. The video thumbnail provides the only imagery.
 
 ## Colors
 

@@ -8,6 +8,7 @@ type Quality = "best" | number;
 type Format = "best" | "mp3";
 type Video = {
   id: string;
+  platform?: "youtube" | "vimeo";
   title: string;
   channel: string;
   duration: number | null;
@@ -39,11 +40,16 @@ function Icon({ name, className }: { name: "arrow" | "download" | "link" | "chec
 
 function videoUrl(value: string): string {
   const trimmed = value.trim();
+  const input = /^[a-z][a-z\d+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`;
   let parsed: URL;
-  try { parsed = new URL(/^[a-z][a-z\d+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`); }
-  catch { throw new Error("Paste a valid YouTube video link."); }
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Paste a YouTube video link starting with https://.");
+  try { parsed = new URL(input); }
+  catch { throw new Error("Paste a valid YouTube or Vimeo video link."); }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Paste a video link starting with https://.");
   const host = parsed.hostname.toLowerCase();
+  if (["vimeo.com", "www.vimeo.com", "player.vimeo.com"].includes(host)) {
+    // Keep the full URL so the server can validate an unlisted video's privacy hash.
+    return input;
+  }
   const parts = parsed.pathname.split("/").filter(Boolean);
   let id: string | null = null;
   if (["youtu.be", "www.youtu.be"].includes(host)) id = parts[0] ?? null;
@@ -51,7 +57,7 @@ function videoUrl(value: string): string {
     if (parsed.pathname === "/watch") id = parsed.searchParams.get("v");
     else if (["shorts", "embed", "live"].includes(parts[0])) id = parts[1] ?? null;
   }
-  if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) throw new Error("Use a YouTube video link, such as youtube.com/watch?v=… or youtu.be/….");
+  if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) throw new Error("Paste a link to a single YouTube or Vimeo video.");
   return `https://www.youtube.com/watch?v=${id}`;
 }
 
@@ -215,23 +221,23 @@ export default function Downloader() {
       </nav>
       <main className={styles.main}>
         <header className={styles.header}>
-          <h1>Download a<br className={styles.desktopBreak} /> YouTube video.</h1>
+          <h1>Download a video.</h1>
           <p>Paste a link. Choose video or audio. Save the file.</p>
         </header>
 
-        <section className={styles.tool} aria-label="YouTube downloader">
+        <section className={styles.tool} aria-label="Video downloader">
           <form onSubmit={findVideo} className={styles.linkForm} aria-busy={loading === "info"}>
-            <label htmlFor="video-url">YouTube link</label>
+            <label htmlFor="video-url">Video link</label>
             <div className={styles.inputRow}>
               <div className={styles.inputWrap}>
                 <Icon name="link" />
-                <input ref={inputRef} id="video-url" name="url" type="text" inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="https://www.youtube.com/watch?v=…" value={url} disabled={busy} required aria-describedby={error ? "download-error url-help" : "url-help"} aria-invalid={Boolean(error && !video)} onChange={(event) => { setUrl(event.target.value); setVideo(null); setJob(null); setError(""); setNotice(""); }} />
+                <input ref={inputRef} id="video-url" name="url" type="text" inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="Paste a YouTube or Vimeo link" value={url} disabled={busy} required aria-describedby={error ? "download-error url-help" : "url-help"} aria-invalid={Boolean(error && !video)} onChange={(event) => { setUrl(event.target.value); setVideo(null); setJob(null); setError(""); setNotice(""); }} />
               </div>
               <button type="submit" className={styles.primary} disabled={busy || !url.trim()}>
                 {loading === "info" ? <><span className={styles.spinner} /> Finding video</> : <>Find video <Icon name="arrow" /></>}
               </button>
             </div>
-            <p id="url-help" className={styles.help}>YouTube videos, Shorts and youtu.be links.</p>
+            <p id="url-help" className={styles.help}>YouTube videos, Shorts, and Vimeo links.</p>
             {loading === "info" && <p className={styles.screenReader} role="status">Finding your video.</p>}
           </form>
 
@@ -247,7 +253,7 @@ export default function Downloader() {
               <div className={styles.videoText}>
                 <h2 ref={titleRef} tabIndex={-1}>{video.title}</h2>
                 <p>{video.channel}</p>
-                <span className={styles.sourceLabel}>YouTube</span>
+                <span className={styles.sourceLabel}>{video.platform === "vimeo" ? "Vimeo" : "YouTube"}</span>
               </div>
               {!busy && <button type="button" className={styles.textButton} onClick={reset}>Change video</button>}
             </div>
@@ -286,7 +292,7 @@ export default function Downloader() {
               <p>{format === "best" ? quality === "best" ? "Best available video + audio" : `${quality}p video + audio` : "MP3 audio"}<span>{format === "best" ? "Original streams preserved." : "Prepared from the original video."}</span></p>
               <button type="button" className={styles.primary} disabled={busy} onClick={prepareFile}>{loading === "job" ? <><span className={styles.spinner} /> Starting</> : <>Prepare {format === "best" ? "video" : "MP3"} <Icon name="download" /></>}</button>
             </div>}
-          </div> : !loading && <div className={styles.emptyState}><Icon name="download" /><p>Your video will appear here.</p><span>Start with a YouTube link above.</span></div>}
+          </div> : !loading && <div className={styles.emptyState}><Icon name="download" /><p>Your video will appear here.</p><span>Start with a video link above.</span></div>}
         </section>
         <p className={styles.footnote}>Up to 2 hours per video · 10 GB per file.<br />Download videos you own or have permission to save.</p>
       </main>

@@ -7,7 +7,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createOidcVerifier } from './oidc.mjs';
 
-const ID = /^[A-Za-z0-9_-]{11}$/;
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+const VIMEO_HASH = /^[a-f0-9]{10}$/;
+const PLATFORM_NAME = { youtube: 'YouTube', vimeo: 'Vimeo' };
 const JOB_ID = /^[a-f0-9]{64}$/;
 const OWNER = '.downloadvideo-job';
 const LEGACY_QUALITIES = [1080, 720, 480, 360];
@@ -17,28 +19,46 @@ export class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
-export function parseYouTubeUrl(value) {
+export function parseVideoUrl(value) {
+  const invalidLink = 'Enter a link to one YouTube or Vimeo video.';
   if (typeof value !== 'string' || value.length > 2048 || /[\x00-\x1f\x7f]/.test(value)) {
-    throw new HttpError(400, 'Enter a valid YouTube video link.');
+    throw new HttpError(400, invalidLink);
   }
-  let parsed;
   const input = value.trim();
-  try { parsed = new URL(input); } catch { throw new HttpError(400, 'Enter a valid YouTube video link.'); }
-  const authority = input.match(/^[a-z]+:\/\/([^/?#]+)/i)?.[1] ?? '';
-  if (!['https:', 'http:'].includes(parsed.protocol) || parsed.username || parsed.password || authority.includes(':')) {
-    throw new HttpError(400, 'Use a YouTube link without a login or port number.');
-  }
+  const match = /^https?:\/\/([^/?#]+)([^?#]*)/i.exec(input);
+  if (!match || input.includes('\\')) throw new HttpError(400, invalidLink);
+  let parsed;
+  try { parsed = new URL(input); } catch { throw new HttpError(400, invalidLink); }
+  const [, authority, rawPath] = match;
   const host = parsed.hostname.toLowerCase();
+  if (authority.toLowerCase() !== host) {
+    throw new HttpError(400, 'Use a video link without a login or port number.');
+  }
+
+  if (host === 'vimeo.com' || host === 'www.vimeo.com' || host === 'player.vimeo.com') {
+    const player = host === 'player.vimeo.com';
+    const pathMatch = player
+      ? /^\/video\/([1-9]\d{0,15})\/?$/.exec(rawPath)
+      : /^\/([1-9]\d{0,15})(?:\/([a-f0-9]{10}))?\/?$/.exec(rawPath);
+    if (!pathMatch) throw new HttpError(400, invalidLink);
+    const id = pathMatch[1];
+    const hashes = player ? parsed.searchParams.getAll('h') : pathMatch.slice(2).filter(Boolean);
+    if (hashes.length > 1 || (hashes.length === 1 && !VIMEO_HASH.test(hashes[0]))) {
+      throw new HttpError(400, 'Copy the full Vimeo link and try again.');
+    }
+    const hashQuery = hashes.length ? `?h=${hashes[0]}` : '';
+    return { id, platform: 'vimeo', url: `https://player.vimeo.com/video/${id}${hashQuery}` };
+  }
+
   let id;
   if (['youtu.be', 'www.youtu.be'].includes(host)) {
-    const match = parsed.pathname.match(/^\/([A-Za-z0-9_-]{11})\/?$/);
-    id = match?.[1];
+    id = parsed.pathname.match(/^\/([A-Za-z0-9_-]{11})\/?$/)?.[1];
   } else if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com'].includes(host)) {
     if (parsed.pathname === '/watch') id = parsed.searchParams.get('v');
     else id = parsed.pathname.match(/^\/(?:shorts|embed|live)\/([A-Za-z0-9_-]{11})\/?$/)?.[1];
   }
-  if (!ID.test(id ?? '')) throw new HttpError(400, 'Enter a link to one YouTube video.');
-  return { id, url: `https://www.youtube.com/watch?v=${id}` };
+  if (!YOUTUBE_ID.test(id ?? '')) throw new HttpError(400, invalidLink);
+  return { id, platform: 'youtube', url: `https://www.youtube.com/watch?v=${id}` };
 }
 
 function safeText(value, fallback = '', length = 200) {
@@ -60,17 +80,33 @@ function sizeLabel(bytes) {
   return `${bytes} bytes`;
 }
 
-function publicDownloadError(error) {
+function vimeoThumbnail(value) {
+  if (typeof value !== 'string' || value.length > 2048) return null;
+  try {
+    const url = new URL(value);
+    if (url.origin === 'https://i.vimeocdn.com' && !url.username && !url.password) return url.href;
+  } catch {}
+  return null;
+}
+
+function publicDownloadError(error, platform) {
   if (error instanceof HttpError) return error.message;
   const detail = `${error.message ?? ''} ${error.stderr ?? ''}`;
-  if (/sign in|bot|429|403|po token|confirm you/i.test(detail)) {
-    return 'YouTube blocked this request. Try another video or try again later.';
-  }
-  if (/unavailable|private video|members.only|not available|removed|age.restricted/i.test(detail)) {
-    return 'This video is unavailable or restricted. Try a public YouTube video.';
+  if (platform === 'vimeo' && /\bDRM\b/i.test(detail)) {
+    return 'Vimeo only offered protected streams for this download. Try another video or a lower quality.';
   }
   if (/requested format|format.*not available/i.test(detail)) return 'This format is unavailable for this video. Try a lower quality or MP3.';
-  return 'YouTube could not provide this video. Try again later or use another link.';
+  if (platform === 'vimeo' && /privacy|password|log[ -]?in|logged[ -]?in|sign in|403|404|forbidden|restricted|unavailable/i.test(detail)) {
+    return 'Vimeo could not open this video. Check the link and make sure the video plays without signing in.';
+  }
+  const name = PLATFORM_NAME[platform];
+  if (/sign in|bot|429|403|po token|confirm you/i.test(detail)) {
+    return `${name} blocked this request. Try another video or try again later.`;
+  }
+  if (/unavailable|private video|members.only|not available|removed|age.restricted/i.test(detail)) {
+    return `This video is unavailable or restricted. Try a public ${name} video.`;
+  }
+  return `${name} could not provide this video. Try again later or use another link.`;
 }
 
 function json(res, status, value, extra = {}) {
@@ -192,10 +228,12 @@ export async function createDownloader(overrides = {}) {
     return await verifyOidc(token);
   }
 
-  function commonArgs() {
-    return ['--ignore-config', '--no-plugin-dirs', '--no-playlist', '--no-cache-dir',
+  function commonArgs(platform) {
+    const args = ['--ignore-config', '--no-plugin-dirs', '--no-playlist', '--no-cache-dir',
       '--js-runtimes', `node:${config.nodeBin}`, '--ffmpeg-location', config.ffmpegDir,
       '--socket-timeout', '20', '--retries', '2', '--fragment-retries', '2', '--no-warnings'];
+    if (platform === 'vimeo') args.push('--use-extractors', 'vimeo');
+    return args;
   }
 
   function runChild(args, { timeout, cwd = config.dataDir, job, onLine, capture = false } = {}) {
@@ -216,7 +254,7 @@ export async function createDownloader(overrides = {}) {
       child.stdout.on('data', chunk => {
         stdoutBytes += chunk.length;
         if (capture) {
-          if (stdoutBytes > config.maxStdoutBytes) { failure = new HttpError(502, 'YouTube returned too much video information. Try another video.'); terminate(child); return; }
+          if (stdoutBytes > config.maxStdoutBytes) { failure = new HttpError(502, 'The provider returned too much video information. Try another video.'); terminate(child); return; }
           stdout += chunk.toString('utf8');
         }
         if (onLine) {
@@ -240,43 +278,48 @@ export async function createDownloader(overrides = {}) {
     });
   }
 
-  async function lookup(input) {
-    const parsed = parseYouTubeUrl(input);
-    const cached = metadata.get(parsed.id);
-    if (cached && cached.expires > Date.now()) return cached.info;
-    if (inFlightMetadata.has(parsed.id)) return inFlightMetadata.get(parsed.id);
+  async function lookup({ id, platform, url }) {
+    // An unlisted Vimeo URL must only share cached metadata with the same privacy hash.
+    const cached = metadata.get(url);
+    if (cached && cached.expires > Date.now()) return cached;
+    if (inFlightMetadata.has(url)) return inFlightMetadata.get(url);
     if (activeMetadata >= config.maxMetadata) throw new HttpError(503, 'Video lookup is busy. Try again in a moment.');
     activeMetadata++;
     const task = (async () => {
       let data;
       try {
-        const result = await runChild([...commonArgs(), '--dump-single-json', '--skip-download', '--no-progress', '--', parsed.url], { timeout: config.metadataTimeoutMs, capture: true });
-        try { data = JSON.parse(result); } catch { throw new HttpError(502, 'YouTube returned invalid video information. Try again later.'); }
+        const result = await runChild([...commonArgs(platform), '--dump-single-json', '--skip-download', '--no-progress', '--', url], { timeout: config.metadataTimeoutMs, capture: true });
+        try { data = JSON.parse(result); } catch { throw new HttpError(502, `${PLATFORM_NAME[platform]} returned invalid video information. Try again later.`); }
       } catch (error) {
         if (error instanceof HttpError) throw error;
-        throw new HttpError(502, publicDownloadError(error));
+        throw new HttpError(502, publicDownloadError(error, platform));
       }
-      if (data.id !== parsed.id || data._type === 'playlist' || data.entries) throw new HttpError(400, 'Enter a link to one YouTube video.');
+      if (!data || data.id !== id || data._type === 'playlist' || data.entries ||
+          (platform === 'vimeo' && data.extractor_key !== 'Vimeo')) {
+        throw new HttpError(400, `Enter a link to one ${PLATFORM_NAME[platform]} video.`);
+      }
       if (data.is_live || ['is_live', 'is_upcoming', 'post_live'].includes(data.live_status)) throw new HttpError(400, 'Live and upcoming videos are not supported.');
       if (!Number.isFinite(data.duration) || data.duration <= 0) throw new HttpError(400, 'This video has no known duration and cannot be downloaded.');
       if (data.duration > config.maxDuration) throw new HttpError(400, 'Choose a video that is two hours or shorter.');
       const formats = Array.isArray(data.formats) ? data.formats.filter(format => videoResolution(format) !== null) : [];
       const qualities = [...new Set(formats.map(videoResolution))].sort((a, b) => b - a);
       const largest = formats.reduce((best, format) => !best || videoResolution(format) > videoResolution(best) ? format : best, null);
-      const portrait = largest && Number.isFinite(largest.width) && largest.width > 0 && largest.width < largest.height;
+      const portrait = Boolean(largest && Number.isFinite(largest.width) && largest.width > 0 && largest.width < largest.height);
+      const name = PLATFORM_NAME[platform];
       const info = {
-        id: parsed.id, title: safeText(data.title, 'YouTube video'),
-        channel: safeText(data.channel || data.uploader, 'YouTube'), duration: data.duration,
-        thumbnail: `https://i.ytimg.com/vi/${parsed.id}/hqdefault.jpg`,
+        id, platform, title: safeText(data.title, `${name} video`),
+        channel: safeText(data.channel || data.uploader, name), duration: data.duration,
+        thumbnail: platform === 'vimeo' ? vimeoThumbnail(data.thumbnail) : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
         qualities, bestQuality: qualities[0] ?? null,
       };
-      metadata.delete(parsed.id);
-      metadata.set(parsed.id, { info, portrait: Boolean(portrait), expires: Date.now() + config.metadataTtlMs });
+      const result = { info, portrait, expires: Date.now() + config.metadataTtlMs };
+      metadata.delete(url);
+      metadata.set(url, result);
       while (metadata.size > 100) metadata.delete(metadata.keys().next().value);
-      return info;
+      return result;
     })();
-    inFlightMetadata.set(parsed.id, task);
-    try { return await task; } finally { activeMetadata--; inFlightMetadata.delete(parsed.id); }
+    inFlightMetadata.set(url, task);
+    try { return await task; } finally { activeMetadata--; inFlightMetadata.delete(url); }
   }
 
   async function checkSpace() {
@@ -307,15 +350,20 @@ export async function createDownloader(overrides = {}) {
       if (job.cancelled) throw new HttpError(400, 'Download cancelled.');
       await mkdir(job.directory, { mode: 0o700 });
       await writeFile(path.join(job.directory, OWNER), 'downloadvideo\n', { mode: 0o600, flag: 'wx' });
-      const args = [...commonArgs(), '--no-simulate', '--newline', '--progress', '--progress-delta', '0.5',
+      const args = [...commonArgs(job.platform), '--no-simulate', '--newline', '--progress', '--progress-delta', '0.5',
         '--progress-template', 'download:__PROGRESS__%(progress)j',
         '--print', 'after_move:__FILE__%(filepath)j', '--max-filesize', `${config.maxOutputBytes}`,
         '--match-filters', `!is_live & duration <= ${config.maxDuration}`,
         '-o', path.join(job.directory, 'video.%(ext)s')];
+      // Some Vimeo manifests advertise formats the player cannot actually fetch.
+      if (job.platform === 'vimeo') args.push('--check-formats');
       if (job.format === 'mp3') args.push('-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '192K');
       else if (job.format === 'best') {
         const dimension = job.portrait ? 'width' : 'height';
-        const selection = job.quality === 'best' ? 'bv+ba/b' : `bv[${dimension}<=${job.quality}]+ba/b[${dimension}<=${job.quality}]`;
+        const qualityFilter = job.quality === 'best' ? '' : `[${dimension}<=${job.quality}]`;
+        const video = job.platform === 'vimeo' ? 'bv*' : 'bv';
+        const fallback = job.platform === 'vimeo' ? 'bv*' : 'b';
+        const selection = `${video}${qualityFilter}+ba/${fallback}${qualityFilter}`;
         const resolution = job.quality === 'best' ? 'res' : `res:${job.quality}`;
         args.push('-f', selection, '--format-sort-force', '--format-sort', `${resolution},fps,hdr,lang,quality`,
           '--merge-output-format', 'mkv', '--remux-video', 'mkv');
@@ -341,19 +389,19 @@ export async function createDownloader(overrides = {}) {
       const expected = path.join(job.directory, `video.${job.extension}`);
       if (typeof finalPath !== 'string' || path.resolve(finalPath) !== expected) throw new HttpError(502, 'The video could not be converted to the requested format.');
       const file = await lstat(expected);
-      if (!file.isFile() || file.size === 0) throw new HttpError(502, 'YouTube returned an empty file.');
+      if (!file.isFile() || file.size === 0) throw new HttpError(502, `${PLATFORM_NAME[job.platform]} returned an empty file.`);
       if (file.size > config.maxOutputBytes) throw new HttpError(413, `The file exceeds the ${sizeLabel(config.maxOutputBytes)} download limit. Try a lower quality or shorter video.`);
       for (const entry of await readdir(job.directory)) {
         if (entry !== OWNER && entry !== `video.${job.extension}`) await rm(path.join(job.directory, entry), { recursive: true, force: true });
       }
       if (job.cancelled) throw new HttpError(400, job.error || 'Download cancelled.');
       job.file = expected; job.size = file.size;
-      job.filename = `${safeText(job.title, 'YouTube video', 100).replace(/[\\/]/g, '_')}.${job.extension}`;
+      job.filename = `${safeText(job.title, `${PLATFORM_NAME[job.platform]} video`, 100).replace(/[\\/]/g, '_')}.${job.extension}`;
       job.status = 'ready'; job.progress = 100; job.stage = 'Ready to download';
       job.expires = Date.now() + config.ttlMs;
     } catch (error) {
       job.status = 'error'; job.progress = null; job.stage = 'Download stopped';
-      job.error = job.cancelled ? job.error || 'Download cancelled.' : publicDownloadError(error);
+      job.error = job.cancelled ? job.error || 'Download cancelled.' : publicDownloadError(error, job.platform);
       job.expires = Date.now() + config.ttlMs;
       await removeJobFiles(job).catch(() => {});
     } finally { active--; pump(); }
@@ -390,7 +438,7 @@ export async function createDownloader(overrides = {}) {
     try { await checkSpace(); }
     catch (error) {
       for (const job of jobs.values()) if (job.status === 'processing') {
-        job.cancelled = true; job.error = publicDownloadError(error); terminate(job.child);
+        job.cancelled = true; job.error = publicDownloadError(error, job.platform); terminate(job.child);
       }
     } finally { checkingQuota = false; }
   }, config.quotaIntervalMs);
@@ -437,11 +485,13 @@ export async function createDownloader(overrides = {}) {
       if (file && ['GET', 'HEAD'].includes(req.method)) { await serveFile(req, res, file[1]); return; }
       if (!(await isAuthenticated(req))) { json(res, 401, { error: 'Unauthorized.' }); return; }
       if (route === '/info' && req.method === 'POST') {
-        const body = await requestJson(req); json(res, 200, await lookup(body.url)); return;
+        const body = await requestJson(req);
+        const { info } = await lookup(parseVideoUrl(body.url));
+        json(res, 200, info); return;
       }
       if (route === '/jobs' && req.method === 'POST') {
         const body = await requestJson(req);
-        const parsed = parseYouTubeUrl(body.url);
+        const parsed = parseVideoUrl(body.url);
         const validQuality = body.quality === 'best' || (Number.isSafeInteger(body.quality) && body.quality > 0);
         if (!['best', 'mp4', 'mp3'].includes(body.format) || !validQuality || (body.format === 'mp4' && body.quality === 'best')) {
           throw new HttpError(400, 'Choose a video or audio format and a supported quality.');
@@ -453,7 +503,7 @@ export async function createDownloader(overrides = {}) {
         if (rateLimits.size >= 10000 && !rateLimits.has(client)) throw new HttpError(503, 'The download server is busy. Try again later.');
         times.push(now); rateLimits.set(client, times);
         if (queue.length >= config.maxQueued) throw new HttpError(503, 'The download queue is full. Try again in a moment.');
-        const info = await lookup(parsed.url);
+        const { info, portrait } = await lookup(parsed);
         if (body.format === 'best' && (info.bestQuality === null || (body.quality !== 'best' && !info.qualities.includes(body.quality)))) {
           throw new HttpError(400, 'This video quality is unavailable. Choose Best available or one of the listed resolutions.');
         }
@@ -461,8 +511,8 @@ export async function createDownloader(overrides = {}) {
         if (body.format === 'mp4' && !info.qualities.includes(body.quality) && !legacyQuality) throw new HttpError(400, 'This MP4 quality is unavailable. Choose one of the available qualities or audio.');
         if (queue.length >= config.maxQueued || closed) throw new HttpError(503, 'The download queue is full. Try again in a moment.');
         const id = randomBytes(32).toString('hex');
-        const job = { id, url: parsed.url, title: info.title, format: body.format, quality: body.quality,
-          extension: body.format === 'best' ? 'mkv' : body.format, portrait: metadata.get(parsed.id)?.portrait ?? false,
+        const job = { id, url: parsed.url, platform: parsed.platform, title: info.title, format: body.format, quality: body.quality,
+          extension: body.format === 'best' ? 'mkv' : body.format, portrait,
           directory: path.join(config.dataDir, id), status: 'queued', progress: null, stage: 'Waiting to download',
           readers: 0, expires: Infinity, cancelled: false };
         jobs.set(id, job); queue.push(job); pump(); json(res, 202, { id }); return;
