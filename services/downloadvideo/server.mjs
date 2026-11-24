@@ -360,17 +360,21 @@ export async function createDownloader(overrides = {}) {
         '-o', path.join(job.directory, 'video.%(ext)s')];
       // Some Vimeo manifests advertise formats the player cannot actually fetch.
       if (job.platform === 'vimeo') args.push('--check-formats');
-      if (job.format === 'mp3') args.push('-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '192K');
-      else if (job.format === 'best') {
+      if (job.format === 'mp3') {
+        args.push('-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '192K');
+      } else {
         const dimension = job.portrait ? 'width' : 'height';
         const qualityFilter = job.quality === 'best' ? '' : `[${dimension}<=${job.quality}]`;
-        const video = job.platform === 'vimeo' ? 'bv*' : 'bv';
-        const fallback = job.platform === 'vimeo' ? 'bv*' : 'b';
+        const includeCombined = job.format === 'mp4' || job.platform === 'vimeo';
+        const video = includeCombined ? 'bv*' : 'bv';
+        const fallback = includeCombined ? 'bv*' : 'b';
         const selection = `${video}${qualityFilter}+ba/${fallback}${qualityFilter}`;
         const resolution = job.quality === 'best' ? 'res' : `res:${job.quality}`;
-        args.push('-f', selection, '--format-sort-force', '--format-sort', `${resolution},fps,hdr,lang,quality`,
-          '--merge-output-format', 'mkv', '--remux-video', 'mkv');
-      } else args.push('-f', `bv[ext=mp4][vcodec^=avc1][height<=${job.quality}]+ba[ext=m4a]/b[ext=mp4][vcodec^=avc1][height<=${job.quality}]`, '--merge-output-format', 'mp4', '--remux-video', 'mp4');
+        // Prefer widely playable codecs only after resolving resolution and language.
+        const codecPreference = job.format === 'mp4' ? ',+vcodec:avc,+acodec:m4a' : '';
+        args.push('-f', selection, '--format-sort-force', '--format-sort', `${resolution},fps,hdr,lang${codecPreference},quality`,
+          '--merge-output-format', job.extension, '--remux-video', job.extension);
+      }
       args.push('--', job.url);
       let finalPath;
       // Cancellation may arrive while the directory and marker are being created.
@@ -496,7 +500,7 @@ export async function createDownloader(overrides = {}) {
         const body = await requestJson(req);
         const parsed = parseVideoUrl(body.url);
         const validQuality = body.quality === 'best' || (Number.isSafeInteger(body.quality) && body.quality > 0);
-        if (!['best', 'mp4', 'mp3'].includes(body.format) || !validQuality || (body.format === 'mp4' && body.quality === 'best')) {
+        if (!['best', 'mp4', 'mp3'].includes(body.format) || !validQuality) {
           throw new HttpError(400, 'Choose a video or audio format and a supported quality.');
         }
         const client = safeText(req.headers['x-downloader-client'], req.socket.remoteAddress || 'unknown', 128);
@@ -507,11 +511,12 @@ export async function createDownloader(overrides = {}) {
         times.push(now); rateLimits.set(client, times);
         if (queue.length >= config.maxQueued) throw new HttpError(503, 'The download queue is full. Try again in a moment.');
         const { info, portrait } = await lookup(parsed);
-        if (body.format === 'best' && (info.bestQuality === null || (body.quality !== 'best' && !info.qualities.includes(body.quality)))) {
+        const legacyQuality = body.format === 'mp4' && LEGACY_QUALITIES.includes(body.quality) &&
+          (body.quality <= info.bestQuality || (body.quality === 360 && info.bestQuality > 0));
+        if (body.format !== 'mp3' && (info.bestQuality === null ||
+          (body.quality !== 'best' && !info.qualities.includes(body.quality) && !legacyQuality))) {
           throw new HttpError(400, 'This video quality is unavailable. Choose Best available or one of the listed resolutions.');
         }
-        const legacyQuality = LEGACY_QUALITIES.includes(body.quality) && (body.quality <= info.bestQuality || (body.quality === 360 && info.bestQuality > 0));
-        if (body.format === 'mp4' && !info.qualities.includes(body.quality) && !legacyQuality) throw new HttpError(400, 'This MP4 quality is unavailable. Choose one of the available qualities or audio.');
         if (queue.length >= config.maxQueued || closed) throw new HttpError(503, 'The download queue is full. Try again in a moment.');
         const id = randomBytes(32).toString('hex');
         const job = { id, url: parsed.url, platform: parsed.platform, title: info.title, format: body.format, quality: body.quality,

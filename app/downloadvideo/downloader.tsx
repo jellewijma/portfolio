@@ -5,7 +5,12 @@ import type { FormEvent } from "react";
 import styles from "./downloadvideo.module.css";
 
 type Quality = "best" | number;
-type Format = "best" | "mp3";
+type Format = "best" | "mp4" | "mp3";
+const formatOptions = [
+  { value: "best", label: "MKV", description: "Video and audio", icon: "video" },
+  { value: "mp4", label: "MP4", description: "Video and audio", icon: "video" },
+  { value: "mp3", label: "MP3", description: "Audio only", icon: "audio" },
+] as const;
 type Video = {
   id: string;
   platform?: "youtube" | "vimeo";
@@ -211,7 +216,8 @@ export default function Downloader() {
   const readyUrl = job?.status === "ready" ? httpsUrl(job.downloadUrl) : undefined;
   const thumbnail = httpsUrl(video?.thumbnail);
   const highestQuality = video?.qualities[0];
-  const saveLabel = format === "mp3" ? "MP3" : job?.filename?.toLowerCase().endsWith(".mkv") ? "MKV" : "video";
+  const isVideo = format !== "mp3";
+  const formatLabel = format === "best" ? "MKV" : format.toUpperCase();
 
   return (
     <div className={styles.page}>
@@ -261,21 +267,24 @@ export default function Downloader() {
             <fieldset className={styles.formatField} disabled={busy || job?.status === "ready"}>
               <legend>Save as</legend>
               <div className={styles.formats}>
-                <label className={`${styles.formatChoice} ${format === "best" ? styles.selected : ""} ${!video.qualities.length ? styles.unavailable : ""}`}>
-                  <input type="radio" name="format" value="best" checked={format === "best"} disabled={!video.qualities.length} onChange={() => { setFormat("best"); setJob(null); setError(""); }} />
-                  <Icon name="video" /><span><strong>Video</strong><small>MKV · original video + audio</small></span><span className={styles.radioMark} />
-                </label>
-                <label className={`${styles.formatChoice} ${format === "mp3" ? styles.selected : ""}`}>
-                  <input type="radio" name="format" value="mp3" checked={format === "mp3"} onChange={() => { setFormat("mp3"); setJob(null); setError(""); }} />
-                  <Icon name="audio" /><span><strong>Audio</strong><small>MP3 · audio only</small></span><span className={styles.radioMark} />
-                </label>
+                {formatOptions.map(({ value, label, description, icon }) => {
+                  const unavailable = value !== "mp3" && !video.qualities.length;
+                  return (
+                    <label key={value} className={`${styles.formatChoice} ${format === value ? styles.selected : ""} ${unavailable ? styles.unavailable : ""}`}>
+                      <input type="radio" name="format" value={value} checked={format === value} disabled={unavailable} onChange={() => { setFormat(value); setJob(null); setError(""); }} />
+                      <Icon name={icon} />
+                      <span><strong>{label}</strong><small>{description}</small></span>
+                      <span className={styles.radioMark} />
+                    </label>
+                  );
+                })}
               </div>
-              {format === "best" && <>
+              {isVideo && <>
                 <div className={styles.qualityRow}><label htmlFor="video-quality">Video quality</label><select id="video-quality" value={quality} onChange={(event) => setQuality(event.target.value === "best" ? "best" : Number(event.target.value))}>
                   <option value="best">Best available{highestQuality ? ` · ${highestQuality}p` : ""}</option>
                   {video.qualities.map((value) => <option key={value} value={value}>{qualityLabel(value)}</option>)}
                 </select></div>
-                <p className={styles.help}>Original quality is saved as MKV without re-encoding.</p>
+                <p className={styles.help}>The selected video and audio streams are saved without re-encoding.</p>
               </>}
             </fieldset>
 
@@ -285,12 +294,12 @@ export default function Downloader() {
               <div className={styles.waitRow}><p>You can save the file when it is ready.</p><button className={styles.textButton} disabled={cancelling} onClick={cancelDownload}>{cancelling ? "Cancelling" : "Cancel download"}</button></div>
             </div> : job?.status === "ready" ? <div className={styles.readySection}>
               <p className={styles.readyLabel} role="status"><Icon name="check" /> Your file is ready.</p>
-              {readyUrl ? <a href={readyUrl} className={styles.primary} download={job.filename || true}>Save {saveLabel} <Icon name="download" /></a> : <p role="alert">The file link is unavailable. Please prepare the file again.</p>}
+              {readyUrl ? <a href={readyUrl} className={styles.primary} download={job.filename || true}>Save {formatLabel} <Icon name="download" /></a> : <p role="alert">The file link is unavailable. Please prepare the file again.</p>}
               <p className={styles.help}>The download link expires after 1 hour.</p>
               <button type="button" className={styles.textButton} onClick={() => { setJob(null); setError(""); }}>Choose another format <Icon name="arrow" /></button>
             </div> : <div className={styles.actionRow}>
-              <p>{format === "best" ? quality === "best" ? "Best available video + audio" : `${quality}p video + audio` : "MP3 audio"}<span>{format === "best" ? "Original streams preserved." : "Prepared from the original video."}</span></p>
-              <button type="button" className={styles.primary} disabled={busy} onClick={prepareFile}>{loading === "job" ? <><span className={styles.spinner} /> Starting</> : <>Prepare {format === "best" ? "video" : "MP3"} <Icon name="download" /></>}</button>
+              <p>{isVideo ? quality === "best" ? "Best available video + audio" : `${quality}p video + audio` : "MP3 audio"}</p>
+              <button type="button" className={styles.primary} disabled={busy} onClick={prepareFile}>{loading === "job" ? <><span className={styles.spinner} /> Starting</> : <>Prepare {format === "best" ? "video" : formatLabel} <Icon name="download" /></>}</button>
             </div>}
           </div> : !loading && <div className={styles.emptyState}><Icon name="download" /><p>Your video will appear here.</p><span>Start with a video link above.</span></div>}
         </section>

@@ -3,7 +3,7 @@ import Downloader from "./downloader";
 
 export const metadata: Metadata = {
   title: "Download a video | Jelle Wijma",
-  description: "Save a YouTube or Vimeo video at its highest available quality or download its audio as MP3.",
+  description: "Save a YouTube or Vimeo video as MKV or MP4 at its highest available quality, or download the audio as MP3.",
   robots: { index: false, follow: false },
 };
 
