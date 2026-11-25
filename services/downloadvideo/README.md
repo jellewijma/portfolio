@@ -46,11 +46,11 @@ systemctl --user disable --now downloadvideo.service
 
 ## Limits and behavior
 
-The worker accepts individual YouTube videos, including Shorts, and Vimeo video and player links. Vimeo requests use the official player and keep the privacy hash from a full unlisted link. The player must make the video available without an account or password. The worker rejects live streams, videos over two hours and unsupported URLs.
+The worker accepts individual YouTube videos and Shorts, Vimeo video and player links, and public Instagram Reels and single-video posts. Vimeo requests use the official player and keep the privacy hash from a full unlisted link. Instagram and Vimeo must make the video available without signing in. The worker rejects Instagram carousels, live streams, videos over two hours and unsupported URLs.
 
 Video defaults to **Best available**, selecting the highest available stream resolution. FFmpeg combines the streams into MKV or MP4 without re-encoding. There is no fixed resolution cap, so available 4K, 8K and higher-resolution streams can be selected. Quality options come from the video's actual streams and use the shorter dimension for portrait videos.
 
-Selecting a numeric resolution sets an upper limit. MP4 prefers H.264 video and AAC audio among comparable streams. Higher resolutions can use codecs such as VP9 or AV1, so playback depends on the device's codec support. MP3 converts audio to 192 kbps.
+Selecting a numeric resolution sets an upper limit. MP4 prefers H.264 video and AAC audio among comparable streams. Higher resolutions can use codecs such as VP9 or AV1, so playback depends on the device's codec support. MP3 converts available audio to 192 kbps. The worker checks the prepared Instagram file with FFprobe because Instagram can omit duration from its metadata.
 
 Two media jobs and four metadata lookups can run concurrently. The queue holds eight jobs, each client can request ten downloads per hour, jobs time out after fifteen minutes, final files are limited to 10 GB and temporary storage has a 40 GB quota. The worker keeps at least 2 GB of disk space free. Metadata is bounded and cached. Completed files expire after one hour; active transfers finish before cleanup. Restarting the worker invalidates its job links and clears marked temporary job directories.
 
