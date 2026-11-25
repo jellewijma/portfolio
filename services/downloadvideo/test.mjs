@@ -13,8 +13,11 @@ const VIMEO_UNLISTED = '123456789';
 const VIMEO_HASH = '123abc456d';
 const VIMEO_DRM = '76979871';
 const VIMEO_DENIED = '1216966772';
+const INSTAGRAM_REEL = 'Chunk8-jurw';
+const INSTAGRAM_POST = 'aye83DjauH';
 const url = id => `https://www.youtube.com/watch?v=${id}`;
 const vimeoPlayer = id => `https://player.vimeo.com/video/${id}`;
+const instagramReel = id => `https://www.instagram.com/reel/${id}/`;
 
 async function fixture(t, options = {}, prepare) {
   const root = await mkdtemp(path.join(tmpdir(), 'downloadvideo-test-'));
@@ -28,8 +31,24 @@ const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify(args) + '\\n');
 const source = new URL(args.at(-1));
 const vimeo = source.hostname === 'player.vimeo.com';
-const id = vimeo ? source.pathname.split('/').at(-1) : source.searchParams.get('v');
+const instagram = source.hostname === 'www.instagram.com';
+const id = instagram ? source.pathname.split('/')[2] : vimeo ? source.pathname.split('/').at(-1) : source.searchParams.get('v');
 if (args.includes('--dump-single-json')) {
+  if (instagram) {
+    if (id === 'LoginNeeded') {
+      process.stderr.write('Instagram sent an empty media response. Your IP address is likely being rate-limited, or this post requires login.');
+      process.exit(1);
+    }
+    process.stdout.write(JSON.stringify({
+      id, extractor_key: 'Instagram', title: 'Instagram sample', duration: null,
+      entries: id === 'Carousel123' ? [] : undefined,
+      formats: id === 'DirectMp4XX' ? [{ ext:'mp4', protocol:'https' }] : [
+        { ext:'mp4', protocol:'https', vcodec:'avc1', acodec:'none', width:720, height:1280 },
+        ...(id === '${INSTAGRAM_POST}' ? [] : [{ ext:'m4a', protocol:'https', vcodec:'none', acodec:'mp4a.40.2' }]),
+      ],
+    }));
+    process.exit(0);
+  }
   if (vimeo) {
     if (id === '${VIMEO_DENIED}') {
       process.stderr.write('Unable to download webpage: HTTP Error 401: Unauthorized');
@@ -68,6 +87,10 @@ if (args.includes('--dump-single-json')) {
 } else {
   if (id === 'EEEEEEEEEEE') { process.stderr.write('Sign in to confirm you are not a bot'); process.exit(1); }
   if (id === '${VIMEO_DRM}') { process.stderr.write('This format is DRM protected. Requested format is not available'); process.exit(1); }
+  if (id === '${INSTAGRAM_POST}' && args.includes('-x')) {
+    process.stderr.write('Postprocessing: unable to obtain file audio codec with ffprobe');
+    process.exit(1);
+  }
   const ext = args.includes('-x') ? 'mp3' : args[args.indexOf('--remux-video')+1] === 'mkv' ? 'mkv' : 'mp4';
   const filename = args[args.indexOf('-o')+1].replace('%(ext)s', ext);
   process.stdout.write('__PROGRESS__' + JSON.stringify({status:'downloading', downloaded_bytes:5,total_bytes:15}) + '\\n');
@@ -76,6 +99,12 @@ if (args.includes('--dump-single-json')) {
     process.stdout.write('__FILE__' + JSON.stringify(filename) + '\\n');
   }, id === 'CCCCCCCCCCC' || id === 'DDDDDDDDDDD' ? 2000 : 15);
 }
+`, { mode: 0o700 });
+  await writeFile(path.join(root, 'ffprobe'), `#!${process.execPath}
+const streams = process.argv.at(-1).endsWith('.mp3')
+  ? [{ codec_type: 'audio' }]
+  : [{ codec_type: 'video', width: 720, height: 1280 }, { codec_type: 'audio' }];
+process.stdout.write(JSON.stringify({ format: { duration: '${options.testMediaDuration ?? 20}' }, streams }));
 `, { mode: 0o700 });
   if (prepare) await prepare(dataDir);
   const app = await createDownloader({ apiKey: KEY, host: '127.0.0.1', port: 0,
@@ -139,6 +168,25 @@ test('Vimeo keeps the privacy hash and only accepts recognized single-video link
     `https://player.vimeo.com:443/video/${VIMEO_VIDEO}`, `https://vimeo.com/../${VIMEO_VIDEO}`,
     `https://vimeo.com/showcase/${VIMEO_VIDEO}`, `https://vimeo.com/${VIMEO_VIDEO}/unknown`,
     `${vimeoPlayer(VIMEO_VIDEO)}?h=bad`, `${privatePlayer}&h=987abc654d`,
+  ]) {
+    assert.throws(() => parseVideoUrl(input), { status: 400 }, input);
+  }
+});
+
+test('Instagram accepts direct Reel and video post links without tracking parameters', () => {
+  for (const input of [instagramReel(INSTAGRAM_REEL), `https://m.instagram.com/reel/${INSTAGRAM_REEL}?igsh=test`]) {
+    assert.deepEqual(parseVideoUrl(input), { id: INSTAGRAM_REEL, platform: 'instagram', url: instagramReel(INSTAGRAM_REEL) });
+  }
+  assert.deepEqual(parseVideoUrl(`https://instagram.com/p/${INSTAGRAM_POST}/?img_index=1`), {
+    id: INSTAGRAM_POST, platform: 'instagram', url: `https://www.instagram.com/p/${INSTAGRAM_POST}/`,
+  });
+  for (const input of [
+    `https://instagram.com.example.test/reel/${INSTAGRAM_REEL}`,
+    `https://user@instagram.com/reel/${INSTAGRAM_REEL}`,
+    `https://instagram.com:443/reel/${INSTAGRAM_REEL}`,
+    `https://instagram.com/stories/creator/${INSTAGRAM_REEL}`,
+    `https://instagram.com/reel/${INSTAGRAM_REEL}/extra`,
+    `https://instagram.com/../reel/${INSTAGRAM_REEL}/`,
   ]) {
     assert.throws(() => parseVideoUrl(input), { status: 400 }, input);
   }
@@ -251,6 +299,71 @@ test('Vimeo jobs check format availability and save a video or audio attachment'
   const failed = await waitFor(request, (await blocked.json()).id);
   assert.equal(failed.status, 'error');
   assert.match(failed.error, /Vimeo only offered protected streams/);
+});
+
+test('public Instagram videos can be saved when duration is missing from metadata', async t => {
+  const { base, post, request, log } = await fixture(t);
+  const source = instagramReel(INSTAGRAM_REEL);
+  const response = await post('/info', { url: source });
+  assert.equal(response.status, 200);
+  const info = await response.json();
+  assert.equal(info.platform, 'instagram');
+  assert.deepEqual(info.qualities, [720]);
+  assert.equal(info.duration, null);
+  for (const [format, quality, extension, mime] of [
+    ['mp4', 720, 'mp4', 'video/mp4'],
+    ['best', 'best', 'mkv', 'video/x-matroska'],
+    ['mp3', 'best', 'mp3', 'audio/mpeg'],
+  ]) {
+    const download = await post('/jobs', { url: source, format, quality });
+    assert.equal(download.status, 202);
+    const { id } = await download.json();
+    assert.equal((await waitFor(request, id)).filename, `Instagram sample.${extension}`);
+    const file = await fetch(`${base}/files/${id}`);
+    assert.equal(file.status, 200);
+    assert.equal(file.headers.get('content-type'), mime);
+    assert.equal(await file.text(), '0123456789video');
+  }
+  const calls = (await readFile(log, 'utf8')).trim().split('\n').map(JSON.parse);
+  assert.ok(calls.every(args => args[args.indexOf('--use-extractors') + 1] === 'instagram'));
+});
+
+test('Instagram still offers video when a post has no audio', async t => {
+  const { post, request } = await fixture(t);
+  const url = `https://www.instagram.com/p/${INSTAGRAM_POST}/`;
+  const audio = await post('/jobs', { url, format: 'mp3', quality: 'best' });
+  assert.equal(audio.status, 202);
+  const stopped = await waitFor(request, (await audio.json()).id);
+  assert.equal(stopped.status, 'error');
+  assert.match(stopped.error, /no downloadable audio track.*MP4/i);
+  const video = await post('/jobs', { url, format: 'mp4', quality: 'best' });
+  assert.equal(video.status, 202);
+  assert.equal((await waitFor(request, (await video.json()).id)).filename, 'Instagram sample.mp4');
+});
+
+test('Instagram offers Best available for video with no advertised resolution', async t => {
+  const { post, request } = await fixture(t);
+  const url = instagramReel('DirectMp4XX');
+  const metadata = await post('/info', { url });
+  assert.equal(metadata.status, 200);
+  assert.deepEqual((await metadata.json()).qualities, []);
+  assert.equal((await post('/jobs', { url, format: 'mp4', quality: 720 })).status, 400);
+  const download = await post('/jobs', { url, format: 'mp4', quality: 'best' });
+  assert.equal(download.status, 202);
+  assert.equal((await waitFor(request, (await download.json()).id)).filename, 'Instagram sample.mp4');
+});
+
+test('Instagram rejects carousels, reports login requirements and checks the prepared duration', async t => {
+  const { post, request } = await fixture(t, { testMediaDuration: 7201 });
+  assert.equal((await post('/info', { url: 'https://www.instagram.com/p/Carousel123/' })).status, 400);
+  const blocked = await post('/info', { url: instagramReel('LoginNeeded') });
+  assert.equal(blocked.status, 502);
+  assert.match((await blocked.json()).error, /Instagram.*sign(?:ing)? in/i);
+  const download = await post('/jobs', { url: instagramReel(INSTAGRAM_REEL), format: 'mp4', quality: 'best' });
+  assert.equal(download.status, 202);
+  const state = await waitFor(request, (await download.json()).id);
+  assert.equal(state.status, 'error');
+  assert.match(state.error, /two hours/i);
 });
 
 test('quality discovery includes original VP9 and AV1 streams above 1080p without DRM, audio or storyboards', async t => {

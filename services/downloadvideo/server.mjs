@@ -9,7 +9,10 @@ import { createOidcVerifier } from './oidc.mjs';
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
 const VIMEO_HASH = /^[a-f0-9]{10}$/;
-const PLATFORM_NAME = { youtube: 'YouTube', vimeo: 'Vimeo' };
+const PLATFORM_NAME = { youtube: 'YouTube', vimeo: 'Vimeo', instagram: 'Instagram' };
+const INSTAGRAM_VIDEO = '[protocol=https][ext=mp4]';
+const INSTAGRAM_AUDIO = '[protocol=https][ext=m4a]';
+const INSTAGRAM_NO_AUDIO = 'This Instagram video has no downloadable audio track. Choose MP4 or MKV to save the video.';
 const JOB_ID = /^[a-f0-9]{64}$/;
 const OWNER = '.downloadvideo-job';
 const LEGACY_QUALITIES = [1080, 720, 480, 360];
@@ -20,7 +23,7 @@ export class HttpError extends Error {
 }
 
 export function parseVideoUrl(value) {
-  const invalidLink = 'Enter a link to one YouTube or Vimeo video.';
+  const invalidLink = 'Enter a link to one YouTube, Vimeo, or Instagram video.';
   if (typeof value !== 'string' || value.length > 2048 || /[\x00-\x1f\x7f]/.test(value)) {
     throw new HttpError(400, invalidLink);
   }
@@ -33,6 +36,13 @@ export function parseVideoUrl(value) {
   const host = parsed.hostname.toLowerCase();
   if (authority.toLowerCase() !== host) {
     throw new HttpError(400, 'Use a video link without a login or port number.');
+  }
+
+  if (['instagram.com', 'www.instagram.com', 'm.instagram.com'].includes(host)) {
+    const pathMatch = /^\/(reel|p)\/([A-Za-z0-9_-]{1,32})\/?$/.exec(rawPath);
+    if (!pathMatch) throw new HttpError(400, 'Enter a link to one Instagram Reel or video post.');
+    const [, type, id] = pathMatch;
+    return { id, platform: 'instagram', url: `https://www.instagram.com/${type}/${id}/` };
   }
 
   if (host === 'vimeo.com' || host === 'www.vimeo.com' || host === 'player.vimeo.com') {
@@ -80,11 +90,13 @@ function sizeLabel(bytes) {
   return `${bytes} bytes`;
 }
 
-function vimeoThumbnail(value) {
+function providerThumbnail(value, platform) {
   if (typeof value !== 'string' || value.length > 2048) return null;
   try {
     const url = new URL(value);
-    if (url.origin === 'https://i.vimeocdn.com' && !url.username && !url.password) return url.href;
+    if (url.protocol !== 'https:' || url.port || url.username || url.password) return null;
+    if (platform === 'vimeo' && url.hostname === 'i.vimeocdn.com') return url.href;
+    if (platform === 'instagram' && /\.(?:cdninstagram\.com|fbcdn\.net)$/.test(url.hostname)) return url.href;
   } catch {}
   return null;
 }
@@ -97,6 +109,13 @@ function publicDownloadError(error, platform) {
   }
   if (platform === 'vimeo' && /\bHTTP(?: Error)? 401\b/i.test(detail)) {
     return 'Vimeo refused the download server’s request. Open the video on Vimeo and look for the Download button.';
+  }
+  if (platform === 'instagram') {
+    if (/no video|photo|carousel/i.test(detail)) return 'Choose a single Instagram Reel or a post containing one video.';
+    if (/no audio|audio stream|unable to obtain file audio codec/i.test(detail)) return INSTAGRAM_NO_AUDIO;
+    if (/privacy|private|log[ -]?in|logged[ -]?in|sign in|401|403|404|429|forbidden|restricted|unavailable/i.test(detail)) {
+      return 'Instagram could not open this video. Check that it plays without signing in, or try again later.';
+    }
   }
   if (/requested format|format.*not available/i.test(detail)) return 'This format is unavailable for this video. Try a lower quality or MP3.';
   if (platform === 'vimeo' && /privacy|password|log[ -]?in|logged[ -]?in|sign in|403|404|forbidden|restricted|unavailable/i.test(detail)) {
@@ -236,12 +255,13 @@ export async function createDownloader(overrides = {}) {
       '--js-runtimes', `node:${config.nodeBin}`, '--ffmpeg-location', config.ffmpegDir,
       '--socket-timeout', '20', '--retries', '2', '--fragment-retries', '2', '--no-warnings'];
     if (platform === 'vimeo') args.push('--use-extractors', 'vimeo');
+    if (platform === 'instagram') args.push('--use-extractors', 'instagram');
     return args;
   }
 
-  function runChild(args, { timeout, cwd = config.dataDir, job, onLine, capture = false } = {}) {
+  function runChild(args, { timeout, cwd = config.dataDir, job, onLine, capture = false, binary = config.ytdlpBin } = {}) {
     return new Promise((resolve, reject) => {
-      const child = spawn(config.ytdlpBin, args, {
+      const child = spawn(binary, args, {
         cwd, detached: true, shell: false, stdio: ['ignore', 'pipe', 'pipe'],
         env: { PATH: process.env.PATH || '/usr/local/bin:/usr/bin:/bin', LANG: 'C.UTF-8', HOME: config.dataDir, TMPDIR: cwd },
       });
@@ -298,21 +318,29 @@ export async function createDownloader(overrides = {}) {
         throw new HttpError(502, publicDownloadError(error, platform));
       }
       if (!data || data.id !== id || data._type === 'playlist' || data.entries ||
-          (platform === 'vimeo' && data.extractor_key !== 'Vimeo')) {
+          (platform !== 'youtube' && data.extractor_key !== PLATFORM_NAME[platform])) {
         throw new HttpError(400, `Enter a link to one ${PLATFORM_NAME[platform]} video.`);
       }
       if (data.is_live || ['is_live', 'is_upcoming', 'post_live'].includes(data.live_status)) throw new HttpError(400, 'Live and upcoming videos are not supported.');
-      if (!Number.isFinite(data.duration) || data.duration <= 0) throw new HttpError(400, 'This video has no known duration and cannot be downloaded.');
+      const instagram = platform === 'instagram';
+      if ((!instagram || data.duration != null) && (!Number.isFinite(data.duration) || data.duration <= 0)) {
+        throw new HttpError(400, 'This video has no known duration and cannot be downloaded.');
+      }
       if (data.duration > config.maxDuration) throw new HttpError(400, 'Choose a video that is two hours or shorter.');
-      const formats = Array.isArray(data.formats) ? data.formats.filter(format => videoResolution(format) !== null) : [];
-      const qualities = [...new Set(formats.map(videoResolution))].sort((a, b) => b - a);
-      const largest = formats.reduce((best, format) => !best || videoResolution(format) > videoResolution(best) ? format : best, null);
+      const formats = Array.isArray(data.formats) ? data.formats : [];
+      // Direct Instagram MP4s can omit the codec and dimensions. The finished file is probed before release.
+      const videoFormats = instagram ? formats.filter(format => format && !format.has_drm &&
+        format.protocol === 'https' && format.ext === 'mp4' && format.vcodec !== 'none') : formats;
+      if (instagram && !videoFormats.length) throw new HttpError(400, 'Choose a single Instagram Reel or a post containing one video.');
+      const measuredFormats = videoFormats.filter(format => videoResolution(format) !== null);
+      const qualities = [...new Set(measuredFormats.map(videoResolution))].sort((a, b) => b - a);
+      const largest = measuredFormats.find(format => videoResolution(format) === qualities[0]);
       const portrait = Boolean(largest && Number.isFinite(largest.width) && largest.width > 0 && largest.width < largest.height);
       const name = PLATFORM_NAME[platform];
       const info = {
         id, platform, title: safeText(data.title, `${name} video`),
-        channel: safeText(data.channel || data.uploader, name), duration: data.duration,
-        thumbnail: platform === 'vimeo' ? vimeoThumbnail(data.thumbnail) : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        channel: safeText(data.channel || data.uploader, name), duration: data.duration ?? null,
+        thumbnail: platform === 'youtube' ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : providerThumbnail(data.thumbnail, platform),
         qualities, bestQuality: qualities[0] ?? null,
       };
       const result = { info, portrait, expires: Date.now() + config.metadataTtlMs };
@@ -346,6 +374,36 @@ export async function createDownloader(overrides = {}) {
     return value;
   }
 
+  async function verifyInstagramFile(job, file, deadline) {
+    const timeout = Math.min(15_000, deadline - Date.now());
+    if (timeout <= 0) throw new HttpError(504, 'The download took too long. Try a shorter video or lower quality.');
+    const demuxer = { mp4: 'mov', mkv: 'matroska', mp3: 'mp3' }[job.extension];
+    let media;
+    try {
+      const result = await runChild(['-v', 'error', '-protocol_whitelist', 'file', '-f', demuxer,
+        '-show_entries', 'format=duration:stream=codec_type,width,height', '-of', 'json', '-i', file], {
+        binary: path.join(config.ffmpegDir, 'ffprobe'), cwd: job.directory, job, timeout, capture: true,
+      });
+      media = JSON.parse(result);
+    } catch (error) {
+      if (error instanceof HttpError) throw error;
+      throw new HttpError(502, 'The downloaded Instagram file could not be verified. Try another video.');
+    }
+    const duration = Number(media?.format?.duration);
+    if (!Number.isFinite(duration) || duration <= 0) throw new HttpError(502, 'The downloaded Instagram file has no readable duration. Try another video.');
+    if (duration > config.maxDuration) throw new HttpError(400, 'Choose a video that is two hours or shorter.');
+    const streams = Array.isArray(media.streams) ? media.streams : [];
+    if (job.format === 'mp3') {
+      if (!streams.some(stream => stream.codec_type === 'audio')) throw new HttpError(400, INSTAGRAM_NO_AUDIO);
+    } else {
+      const video = streams.find(stream => stream.codec_type === 'video' && stream.width > 0 && stream.height > 0);
+      if (!video) throw new HttpError(502, 'The downloaded Instagram file does not contain a readable video. Try another link.');
+      if (job.quality !== 'best' && video[job.portrait ? 'width' : 'height'] > job.quality) {
+        throw new HttpError(502, 'Instagram did not provide the selected video quality. Try another resolution.');
+      }
+    }
+  }
+
   async function execute(job) {
     job.status = 'processing'; job.stage = 'Preparing download';
     try {
@@ -353,22 +411,27 @@ export async function createDownloader(overrides = {}) {
       if (job.cancelled) throw new HttpError(400, 'Download cancelled.');
       await mkdir(job.directory, { mode: 0o700 });
       await writeFile(path.join(job.directory, OWNER), 'downloadvideo\n', { mode: 0o600, flag: 'wx' });
+      const instagram = job.platform === 'instagram';
+      const filter = instagram ? `!is_live & !playlist_id & duration <=? ${config.maxDuration}` : `!is_live & duration <= ${config.maxDuration}`;
       const args = [...commonArgs(job.platform), '--no-simulate', '--newline', '--progress', '--progress-delta', '0.5',
         '--progress-template', 'download:__PROGRESS__%(progress)j',
         '--print', 'after_move:__FILE__%(filepath)j', '--max-filesize', `${config.maxOutputBytes}`,
-        '--match-filters', `!is_live & duration <= ${config.maxDuration}`,
+        '--match-filters', filter,
         '-o', path.join(job.directory, 'video.%(ext)s')];
       // Some Vimeo manifests advertise formats the player cannot actually fetch.
       if (job.platform === 'vimeo') args.push('--check-formats');
       if (job.format === 'mp3') {
-        args.push('-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '192K');
+        const selection = instagram ? `ba${INSTAGRAM_AUDIO}/b${INSTAGRAM_VIDEO}/bv*${INSTAGRAM_VIDEO}` : 'ba/b';
+        args.push('-f', selection, '-x', '--audio-format', 'mp3', '--audio-quality', '192K');
       } else {
         const dimension = job.portrait ? 'width' : 'height';
         const qualityFilter = job.quality === 'best' ? '' : `[${dimension}<=${job.quality}]`;
-        const includeCombined = job.format === 'mp4' || job.platform === 'vimeo';
+        const includeCombined = job.format === 'mp4' || job.platform === 'vimeo' || instagram;
         const video = includeCombined ? 'bv*' : 'bv';
         const fallback = includeCombined ? 'bv*' : 'b';
-        const selection = `${video}${qualityFilter}+ba/${fallback}${qualityFilter}`;
+        const videoFilter = instagram ? `${INSTAGRAM_VIDEO}${qualityFilter}` : qualityFilter;
+        const audio = instagram ? `ba${INSTAGRAM_AUDIO}` : 'ba';
+        const selection = `${video}${videoFilter}+${audio}/${fallback}${videoFilter}`;
         const resolution = job.quality === 'best' ? 'res' : `res:${job.quality}`;
         // Prefer widely playable codecs only after resolving resolution and language.
         const codecPreference = job.format === 'mp4' ? ',+vcodec:avc,+acodec:m4a' : '';
@@ -379,6 +442,7 @@ export async function createDownloader(overrides = {}) {
       let finalPath;
       // Cancellation may arrive while the directory and marker are being created.
       if (job.cancelled) throw new HttpError(400, job.error || 'Download cancelled.');
+      const deadline = Date.now() + config.jobTimeoutMs;
       await runChild(args, { timeout: config.jobTimeoutMs, cwd: job.directory, job, onLine(line) {
         if (line.startsWith('__PROGRESS__')) {
           try {
@@ -398,6 +462,11 @@ export async function createDownloader(overrides = {}) {
       const file = await lstat(expected);
       if (!file.isFile() || file.size === 0) throw new HttpError(502, `${PLATFORM_NAME[job.platform]} returned an empty file.`);
       if (file.size > config.maxOutputBytes) throw new HttpError(413, `The file exceeds the ${sizeLabel(config.maxOutputBytes)} download limit. Try a lower quality or shorter video.`);
+      if (instagram) {
+        if (job.cancelled) throw new HttpError(400, job.error || 'Download cancelled.');
+        job.stage = 'Finishing file';
+        await verifyInstagramFile(job, expected, deadline);
+      }
       for (const entry of await readdir(job.directory)) {
         if (entry !== OWNER && entry !== `video.${job.extension}`) await rm(path.join(job.directory, entry), { recursive: true, force: true });
       }
@@ -513,7 +582,8 @@ export async function createDownloader(overrides = {}) {
         const { info, portrait } = await lookup(parsed);
         const legacyQuality = body.format === 'mp4' && LEGACY_QUALITIES.includes(body.quality) &&
           (body.quality <= info.bestQuality || (body.quality === 360 && info.bestQuality > 0));
-        if (body.format !== 'mp3' && (info.bestQuality === null ||
+        const hasVideo = info.bestQuality !== null || parsed.platform === 'instagram';
+        if (body.format !== 'mp3' && (!hasVideo ||
           (body.quality !== 'best' && !info.qualities.includes(body.quality) && !legacyQuality))) {
           throw new HttpError(400, 'This video quality is unavailable. Choose Best available or one of the listed resolutions.');
         }

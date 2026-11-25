@@ -11,9 +11,10 @@ const formatOptions = [
   { value: "mp4", label: "MP4", description: "Video and audio", icon: "video" },
   { value: "mp3", label: "MP3", description: "Audio only", icon: "audio" },
 ] as const;
+const platformNames = { youtube: "YouTube", vimeo: "Vimeo", instagram: "Instagram" };
 type Video = {
   id: string;
-  platform?: "youtube" | "vimeo";
+  platform?: keyof typeof platformNames;
   title: string;
   channel: string;
   duration: number | null;
@@ -30,6 +31,10 @@ type Job = {
   downloadUrl?: string;
   error?: string;
 };
+
+function hasVideo(video: Video): boolean {
+  return video.platform === "instagram" || video.qualities.length > 0;
+}
 
 function Icon({ name, className }: { name: "arrow" | "download" | "link" | "check" | "video" | "audio"; className?: string }) {
   const paths = {
@@ -48,12 +53,19 @@ function videoUrl(value: string): string {
   const input = /^[a-z][a-z\d+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`;
   let parsed: URL;
   try { parsed = new URL(input); }
-  catch { throw new Error("Paste a valid YouTube or Vimeo video link."); }
+  catch { throw new Error("Paste a valid video link."); }
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") throw new Error("Paste a video link starting with https://.");
   const host = parsed.hostname.toLowerCase();
   if (["vimeo.com", "www.vimeo.com", "player.vimeo.com"].includes(host)) {
     // Keep the full URL so the server can validate an unlisted video's privacy hash.
     return input;
+  }
+  if (["instagram.com", "www.instagram.com", "m.instagram.com"].includes(host)) {
+    const post = /^\/(reel|p)\/([A-Za-z0-9_-]{1,32})\/?$/.exec(parsed.pathname);
+    if (!post || parsed.username || parsed.password || parsed.port) {
+      throw new Error("Paste a link to an Instagram Reel or video post.");
+    }
+    return `https://www.instagram.com/${post[1]}/${post[2]}/`;
   }
   const parts = parsed.pathname.split("/").filter(Boolean);
   let id: string | null = null;
@@ -62,7 +74,7 @@ function videoUrl(value: string): string {
     if (parsed.pathname === "/watch") id = parsed.searchParams.get("v");
     else if (["shorts", "embed", "live"].includes(parts[0])) id = parts[1] ?? null;
   }
-  if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) throw new Error("Paste a link to a single YouTube or Vimeo video.");
+  if (!id || !/^[A-Za-z0-9_-]{11}$/.test(id)) throw new Error("Paste a single video link from YouTube, Vimeo, or Instagram.");
   return `https://www.youtube.com/watch?v=${id}`;
 }
 
@@ -163,8 +175,9 @@ export default function Downloader() {
       const result = await request<Video>("info", controller.signal, { url: normalized });
       if (controller.signal.aborted) return;
       const qualities = [...new Set(result.qualities)].filter((value) => Number.isInteger(value) && value > 0).sort((a, b) => b - a);
-      setVideo({ ...result, qualities }); setSourceUrl(normalized);
-      setQuality("best"); setFormat(qualities.length ? "best" : "mp3");
+      const foundVideo = { ...result, qualities };
+      setVideo(foundVideo); setSourceUrl(normalized);
+      setQuality("best"); setFormat(hasVideo(foundVideo) ? "best" : "mp3");
     } catch (caught) {
       if (!controller.signal.aborted) setError(caught instanceof Error ? caught.message : "Could not find this video. Please try again.");
     } finally { if (!controller.signal.aborted) setLoading(null); }
@@ -237,13 +250,13 @@ export default function Downloader() {
             <div className={styles.inputRow}>
               <div className={styles.inputWrap}>
                 <Icon name="link" />
-                <input ref={inputRef} id="video-url" name="url" type="text" inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="Paste a YouTube or Vimeo link" value={url} disabled={busy} required aria-describedby={error ? "download-error url-help" : "url-help"} aria-invalid={Boolean(error && !video)} onChange={(event) => { setUrl(event.target.value); setVideo(null); setJob(null); setError(""); setNotice(""); }} />
+                <input ref={inputRef} id="video-url" name="url" type="text" inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="Paste a video link" value={url} disabled={busy} required aria-describedby={error ? "download-error url-help" : "url-help"} aria-invalid={Boolean(error && !video)} onChange={(event) => { setUrl(event.target.value); setVideo(null); setJob(null); setError(""); setNotice(""); }} />
               </div>
               <button type="submit" className={styles.primary} disabled={busy || !url.trim()}>
                 {loading === "info" ? <><span className={styles.spinner} /> Finding video</> : <>Find video <Icon name="arrow" /></>}
               </button>
             </div>
-            <p id="url-help" className={styles.help}>YouTube videos, Shorts, and Vimeo links.</p>
+            <p id="url-help" className={styles.help}>YouTube videos and Shorts, Vimeo videos, and public Instagram Reels or video posts.</p>
             {loading === "info" && <p className={styles.screenReader} role="status">Finding your video.</p>}
           </form>
 
@@ -259,7 +272,7 @@ export default function Downloader() {
               <div className={styles.videoText}>
                 <h2 ref={titleRef} tabIndex={-1}>{video.title}</h2>
                 <p>{video.channel}</p>
-                <span className={styles.sourceLabel}>{video.platform === "vimeo" ? "Vimeo" : "YouTube"}</span>
+                <span className={styles.sourceLabel}>{platformNames[video.platform ?? "youtube"]}</span>
               </div>
               {!busy && <button type="button" className={styles.textButton} onClick={reset}>Change video</button>}
             </div>
@@ -268,7 +281,7 @@ export default function Downloader() {
               <legend>Save as</legend>
               <div className={styles.formats}>
                 {formatOptions.map(({ value, label, description, icon }) => {
-                  const unavailable = value !== "mp3" && !video.qualities.length;
+                  const unavailable = value !== "mp3" && !hasVideo(video);
                   return (
                     <label key={value} className={`${styles.formatChoice} ${format === value ? styles.selected : ""} ${unavailable ? styles.unavailable : ""}`}>
                       <input type="radio" name="format" value={value} checked={format === value} disabled={unavailable} onChange={() => { setFormat(value); setJob(null); setError(""); }} />
